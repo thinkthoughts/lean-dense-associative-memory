@@ -1,6 +1,6 @@
 name = "lean-dense-associative-memory"
 version = "0.1.0"
-defaultTargets = ["LeanDAM"]
+defaultTargets = ["DenseAssociativeMemory"]
 
 [[require]]
 name = "mathlib"
@@ -9,3 +9,6 @@ rev = "master"
 
 [[lean_lib]]
 name = "LeanDAM"
+
+[[lean_lib]]
+name = "DenseAssociativeMemory"

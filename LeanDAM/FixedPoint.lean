@@ -12,7 +12,8 @@ theorem fixedPoint_orbit (F : Update State) (x : State)
   induction n with
   | zero => rfl
   | succ n ih =>
-      simp [orbit, ih, IsFixedPoint] at *
+      rw [orbit]
+      rw [ih]
       exact hx
 
 end LeanDAM

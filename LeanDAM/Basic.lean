@@ -2,7 +2,13 @@ import Mathlib
 
 namespace LeanDAM
 
-/-- A network state indexed by neurons. -/
+/--
+A network state indexed by neurons.
+
+For CP2–CP4 the state is real-valued. Restrictions such as
+`σᵢ ∈ {−1, 1}` belong to later source-specific dynamics,
+stability, and capacity specifications.
+-/
 abbrev State (Neuron : Type) := Neuron → ℝ
 
 /-- A collection of stored patterns indexed by memories and neurons. -/
@@ -33,5 +39,18 @@ def energy
 /-- Quadratic separation function. -/
 def quadratic : Separation :=
   fun x => x ^ 2
+
+/--
+Quadratic separation specializes the generalized DAM energy
+to the quadratic energy expressed through pattern overlaps.
+-/
+theorem energy_quadratic
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    [Fintype Memory]
+    (ξ : Patterns Memory Neuron)
+    (σ : State Neuron) :
+    energy quadratic ξ σ =
+      -∑ μ, (overlap ξ σ μ) ^ 2 := rfl
 
 end LeanDAM

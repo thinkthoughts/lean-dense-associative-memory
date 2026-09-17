@@ -53,15 +53,6 @@ theorem energy_quadratic
     energy quadratic ξ σ =
       -∑ μ, (overlap ξ σ μ) ^ 2 := rfl
 
-theorem energy_quadratic
-    {Neuron Memory : Type}
-    [Fintype Neuron]
-    [Fintype Memory]
-    (ξ : Patterns Memory Neuron)
-    (σ : State Neuron) :
-    energy quadratic ξ σ =
-      -∑ μ, (overlap ξ σ μ) ^ 2 := rfl
-
 /-- The Hopfield interaction matrix `Tᵢⱼ = Σᵤ ξᵢᵘ ξⱼᵘ`. -/
 def interaction
     {Neuron Memory : Type}

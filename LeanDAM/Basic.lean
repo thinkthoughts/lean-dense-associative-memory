@@ -1,12 +1,37 @@
+import Mathlib
+
 namespace LeanDAM
 
-variable {State : Type}
+/-- A network state indexed by neurons. -/
+abbrev State (Neuron : Type) := Neuron → ℝ
 
-/-- A deterministic one-step update on a state space. -/
-abbrev Update (State : Type) := State → State
+/-- A collection of stored patterns indexed by memories and neurons. -/
+abbrev Patterns (Memory Neuron : Type) := Memory → Neuron → ℝ
 
-/-- A state is fixed by an update if one update returns the same state. -/
-def IsFixedPoint (F : Update State) (x : State) : Prop :=
-  F x = x
+/-- The overlap of state `σ` with stored pattern `μ`. -/
+def overlap
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    (ξ : Patterns Memory Neuron)
+    (σ : State Neuron)
+    (μ : Memory) : ℝ :=
+  ∑ i, ξ μ i * σ i
+
+/-- A separation function used to define a dense associative memory energy. -/
+abbrev Separation := ℝ → ℝ
+
+/-- Generalized dense associative memory energy. -/
+def energy
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    [Fintype Memory]
+    (F : Separation)
+    (ξ : Patterns Memory Neuron)
+    (σ : State Neuron) : ℝ :=
+  -∑ μ, F (overlap ξ σ μ)
+
+/-- Quadratic separation function. -/
+def quadratic : Separation :=
+  fun x => x ^ 2
 
 end LeanDAM

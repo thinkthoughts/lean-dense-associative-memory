@@ -53,4 +53,44 @@ theorem energy_quadratic
     energy quadratic ξ σ =
       -∑ μ, (overlap ξ σ μ) ^ 2 := rfl
 
+theorem energy_quadratic
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    [Fintype Memory]
+    (ξ : Patterns Memory Neuron)
+    (σ : State Neuron) :
+    energy quadratic ξ σ =
+      -∑ μ, (overlap ξ σ μ) ^ 2 := rfl
+
+/-- The Hopfield interaction matrix `Tᵢⱼ = Σᵤ ξᵢᵘ ξⱼᵘ`. -/
+def interaction
+    {Neuron Memory : Type}
+    [Fintype Memory]
+    (ξ : Patterns Memory Neuron)
+    (i j : Neuron) : ℝ :=
+  ∑ μ, ξ μ i * ξ μ j
+
+/--
+The quadratic DAM energy expands into the Hopfield
+interaction-matrix form.
+-/
+theorem energy_quadratic_interaction
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    [Fintype Memory]
+    (ξ : Patterns Memory Neuron)
+    (σ : State Neuron) :
+    energy quadratic ξ σ =
+      -∑ i, ∑ j, σ i * interaction ξ i j * σ j := by
+  simp only [energy_quadratic, interaction, sq]
+  congr 1
+  simp_rw [Finset.sum_mul_sum, Finset.mul_sum]
+  rw [Finset.sum_comm]
+  congr 1; ext i
+  congr 1; ext j
+  ring_nf
+  rw [Finset.sum_mul, Finset.mul_sum]
+  congr 1; ext μ
+  ring
+
 end LeanDAM

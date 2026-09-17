@@ -61,6 +61,48 @@ def interaction
     (i j : Neuron) : ℝ :=
   ∑ μ, ξ μ i * ξ μ j
 
+/-- Expands a squared overlap into a double sum over neuron indices. -/
+private lemma overlap_sq_expand
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    (ξ : Patterns Memory Neuron)
+    (σ : State Neuron)
+    (μ : Memory) :
+    (overlap ξ σ μ) ^ 2 =
+      ∑ i, ∑ j, (ξ μ i * σ i) * (ξ μ j * σ j) := by
+  unfold overlap
+  rw [sq, Finset.sum_mul_sum]
+
+/-- Moves the memory sum inward, past both neuron sums. -/
+private lemma swap_memory_to_inner
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    [Fintype Memory]
+    (f : Memory → Neuron → Neuron → ℝ) :
+    ∑ μ, ∑ i, ∑ j, f μ i j =
+      ∑ i, ∑ j, ∑ μ, f μ i j := by
+  rw [Finset.sum_comm]
+  simp_rw [Finset.sum_comm]
+
+/-- Factors the memory sum into `interaction`, pulling the two state terms out. -/
+private lemma factor_interaction
+    {Neuron Memory : Type}
+    [Fintype Memory]
+    (ξ : Patterns Memory Neuron)
+    (σ : State Neuron)
+    (i j : Neuron) :
+    ∑ μ, (ξ μ i * σ i) * (ξ μ j * σ j) =
+      σ i * interaction ξ i j * σ j := by
+  have h : ∀ μ,
+      (ξ μ i * σ i) * (ξ μ j * σ j) =
+        σ i * σ j * (ξ μ i * ξ μ j) := by
+    intro μ
+    ring
+  simp_rw [h]
+  rw [← Finset.mul_sum]
+  unfold interaction
+  ring
+
 /--
 The quadratic DAM energy expands into the Hopfield
 interaction-matrix form.
@@ -73,15 +115,15 @@ theorem energy_quadratic_interaction
     (σ : State Neuron) :
     energy quadratic ξ σ =
       -∑ i, ∑ j, σ i * interaction ξ i j * σ j := by
-  simp only [energy_quadratic, interaction, sq]
-  congr 1
-  simp_rw [Finset.sum_mul_sum, Finset.mul_sum]
-  rw [Finset.sum_comm]
-  congr 1; ext i
-  congr 1; ext j
-  ring_nf
-  rw [Finset.sum_mul, Finset.mul_sum]
-  congr 1; ext μ
-  ring
+  rw [energy_quadratic, neg_inj]
+  calc
+    ∑ μ, (overlap ξ σ μ) ^ 2
+        = ∑ μ, ∑ i, ∑ j, (ξ μ i * σ i) * (ξ μ j * σ j) := by
+          simp_rw [overlap_sq_expand]
+    _ = ∑ i, ∑ j, ∑ μ, (ξ μ i * σ i) * (ξ μ j * σ j) :=
+          swap_memory_to_inner
+            (fun μ i j => (ξ μ i * σ i) * (ξ μ j * σ j))
+    _ = ∑ i, ∑ j, σ i * interaction ξ i j * σ j := by
+          simp_rw [factor_interaction]
 
 end LeanDAM

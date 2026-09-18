@@ -297,4 +297,42 @@ theorem selected_memory_binary
     IsBinaryPattern ξ μ :=
   hbinary μ
 
+/--
+A pattern-collection sample: one Boolean outcome for each
+(memory, neuron) coordinate.
+-/
+abbrev Omega (Memory Neuron : Type) :=
+  Memory → Neuron → Bool
+
+/-- Map a Boolean sample coordinate to a spin value in `{−1, +1}`. -/
+def toPM (b : Bool) : ℝ :=
+  if b then 1 else -1
+
+/-- The real-valued pattern collection induced by a Boolean sample. -/
+def patternsOf
+    {Memory Neuron : Type}
+    (ω : Omega Memory Neuron) :
+    Patterns Memory Neuron :=
+  fun μ i => toPM (ω μ i)
+
+/--
+Every sample induces an entirely binary collection of stored patterns.
+This is deterministic and requires no probability assumptions.
+-/
+theorem areBinaryPatterns_patternsOf
+    {Memory Neuron : Type}
+    (ω : Omega Memory Neuron) :
+    AreBinaryPatterns (patternsOf ω) := by
+  intro μ i
+  unfold patternsOf toPM
+  cases ω μ i <;> simp
+
+/-- Uniform probability law on the finite Boolean sample space. -/
+noncomputable def uniformSamples
+    (Memory Neuron : Type)
+    [Fintype Memory]
+    [Fintype Neuron] :
+    PMF (Omega Memory Neuron) :=
+  PMF.uniformOfFintype (Omega Memory Neuron)
+
 end LeanDAM

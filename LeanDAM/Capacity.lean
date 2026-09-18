@@ -131,45 +131,16 @@ theorem overlap_self_of_binary
     (hbinary : IsBinaryPattern ξ μ) :
     overlap ξ (patternState ξ μ) μ =
       (Fintype.card Neuron : ℝ) := by
+  have hbinary' : ∀ i, ξ μ i = 1 ∨ ξ μ i = -1 := by
+    intro i
+    simpa [patternState] using hbinary i
   unfold overlap patternState
   have hterm : ∀ i, ξ μ i * ξ μ i = (1 : ℝ) := by
     intro i
-    rcases hbinary i with hpos | hneg
+    rcases hbinary' i with hpos | hneg
     · rw [hpos]
       norm_num
     · rw [hneg]
-      norm_num
-  simp_rw [hterm]
-  simp
-
-/--
-Flipping one coordinate of a binary stored pattern changes its
-self-overlap from `N` to `N - 2`.
--/
-/--
-A binary stored pattern has self-overlap equal to the number of neurons.
-This is the exact `N` appearing in the capacity calculation.
--/
-theorem overlap_self_of_binary
-    {Neuron Memory : Type}
-    [Fintype Neuron]
-    (ξ : Patterns Memory Neuron)
-    (μ : Memory)
-    (hbinary : IsBinaryPattern ξ μ) :
-    overlap ξ (patternState ξ μ) μ =
-      (Fintype.card Neuron : ℝ) := by
-  unfold overlap
-  have hterm : ∀ i, ξ μ i * patternState ξ μ i = (1 : ℝ) := by
-    intro i
-    rcases hbinary i with hpos | hneg
-    · rw [hpos]
-      change ξ μ i * 1 = 1
-      simpa [patternState] using hpos
-    · rw [hneg]
-      change ξ μ i * -1 = 1
-      have hx : ξ μ i = -1 := by
-        simpa [patternState] using hneg
-      rw [hx]
       norm_num
   simp_rw [hterm]
   simp
@@ -188,51 +159,41 @@ theorem overlap_self_flip_of_binary
     (hbinary : IsBinaryPattern ξ μ) :
     overlap ξ (flip (patternState ξ μ) i) μ =
       (Fintype.card Neuron : ℝ) - 2 := by
-  unfold overlap flip
+  have hbinary' : ∀ j, ξ μ j = 1 ∨ ξ μ j = -1 := by
+    intro j
+    simpa [patternState] using hbinary j
+  have hsq : ∀ j, ξ μ j * ξ μ j = (1 : ℝ) := by
+    intro j
+    rcases hbinary' j with hpos | hneg
+    · rw [hpos]
+      norm_num
+    · rw [hneg]
+      norm_num
+  unfold overlap flip patternState
   rw [← Finset.add_sum_erase _ _ (Finset.mem_univ i)]
-
   have hi :
-      ξ μ i *
-          Function.update (patternState ξ μ) i
-            (-patternState ξ μ i) i =
+      ξ μ i * Function.update (ξ μ) i (-ξ μ i) i =
         (-1 : ℝ) := by
-    simp only [Function.update_same]
-    rcases hbinary i with hpos | hneg
-    · have hx : ξ μ i = 1 := by
-        simpa [patternState] using hpos
-      rw [hx]
-      norm_num
-    · have hx : ξ μ i = -1 := by
-        simpa [patternState] using hneg
-      rw [hx]
-      norm_num
-
+    simp [Function.update, hsq i]
   rw [hi]
-
   have hrest :
       ∑ j ∈ Finset.univ.erase i,
-          ξ μ j *
-            Function.update (patternState ξ μ) i
-              (-patternState ξ μ i) j =
+          ξ μ j * Function.update (ξ μ) i (-ξ μ i) j =
         ∑ j ∈ Finset.univ.erase i, (1 : ℝ) := by
     apply Finset.sum_congr rfl
     intro j hj
     have hji : j ≠ i := by
       simpa using hj
-    rw [Function.update_noteq hji]
-    rcases hbinary j with hpos | hneg
-    · have hx : ξ μ j = 1 := by
-        simpa [patternState] using hpos
-      rw [hpos, hx]
-      norm_num
-    · have hx : ξ μ j = -1 := by
-        simpa [patternState] using hneg
-      rw [hneg, hx]
-      norm_num
-
+    simp [Function.update, hji, hsq j]
   rw [hrest]
-  simp
+  simp only [Finset.sum_const, nsmul_eq_mul]
+  have hcard : 0 < Fintype.card Neuron := by
+    exact Fintype.card_pos_iff.mpr ⟨i⟩
+  rw [Finset.card_erase_of_mem (Finset.mem_univ i)]
+  simp only [Finset.card_univ]
+  push_cast
   norm_num
+  omega
 
 /--
 For polynomial separation `F(x) = x^n`, the selected stored memory

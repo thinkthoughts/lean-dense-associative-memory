@@ -118,6 +118,5 @@ theorem flipEnergyGap_eq_neg_updateGap_of_neg
     rw [← h]
     exact Function.update_eq_self i (patternState ξ μ)
   rw [hflip, hcurrent]
-  ring
 
 end LeanDAM

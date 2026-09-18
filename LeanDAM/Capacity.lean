@@ -13,7 +13,6 @@ def flip
     (σ : State Neuron)
     (i : Neuron) : State Neuron :=
   Function.update σ i (-σ i)
-3
 /--
 Energy change produced by flipping neuron `i`.
 
@@ -325,7 +324,7 @@ theorem areBinaryPatterns_patternsOf
     AreBinaryPatterns (patternsOf ω) := by
   intro μ i
   change toPM (ω μ i) = 1 ∨ toPM (ω μ i) = -1
-  cases h : ω μ i <;> simp [toPM, h]
+  cases ω μ i <;> simp [toPM]
 
 /-- Uniform probability law on the finite Boolean sample space. -/
 noncomputable def uniformSamples

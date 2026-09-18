@@ -170,19 +170,47 @@ theorem overlap_self_flip_of_binary
       rw [hi]
       norm_num
 
-  have hflip :
+  have hrest :
+      ∑ j ∈ Finset.univ.erase i,
+          ξ μ j *
+            Function.update (ξ μ) i (-ξ μ i) j =
+        ∑ j ∈ Finset.univ.erase i,
+          ξ μ j * ξ μ j := by
+    apply Finset.sum_congr rfl
+    intro j hj
+    have hji : j ≠ i := by
+      simpa using hj
+    simp [Function.update, hji]
+
+  have hflipped :
       overlap ξ (flip (patternState ξ μ) i) μ =
-        overlap ξ (patternState ξ μ) μ - 2 := by
+        (-1 : ℝ) +
+          ∑ j ∈ Finset.univ.erase i,
+            ξ μ j * ξ μ j := by
     unfold overlap flip patternState
     rw [← Finset.add_sum_erase _ _ (Finset.mem_univ i)]
-    conv_rhs =>
-      lhs
-      rw [← Finset.add_sum_erase _ _ (Finset.mem_univ i)]
+    rw [hrest]
     simp [Function.update, hbit]
-    ring
 
-  rw [hflip]
-  rw [overlap_self_of_binary ξ μ hbinary]
+  have hself :
+      overlap ξ (patternState ξ μ) μ =
+        (1 : ℝ) +
+          ∑ j ∈ Finset.univ.erase i,
+            ξ μ j * ξ μ j := by
+    unfold overlap patternState
+    rw [← Finset.add_sum_erase _ _ (Finset.mem_univ i)]
+    rw [hbit]
+
+  calc
+    overlap ξ (flip (patternState ξ μ) i) μ
+        = (-1 : ℝ) +
+            ∑ j ∈ Finset.univ.erase i,
+              ξ μ j * ξ μ j := hflipped
+    _ = overlap ξ (patternState ξ μ) μ - 2 := by
+          rw [hself]
+          ring
+    _ = (Fintype.card Neuron : ℝ) - 2 := by
+          rw [overlap_self_of_binary ξ μ hbinary]
 
 /--
 For polynomial separation `F(x) = x^n`, the selected stored memory

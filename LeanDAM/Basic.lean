@@ -350,4 +350,22 @@ def IsStablePattern
     (μ : Memory) : Prop :=
   ∀ i, stepAt F ξ (patternState ξ μ) i = patternState ξ μ
 
+/--
+If, at every neuron, the current value of a binary stored pattern
+is selected by the energy comparison, then the stored pattern is stable.
+-/
+theorem stablePattern_of_stepAt_eq
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    [Fintype Memory]
+    [DecidableEq Neuron]
+    (F : Separation)
+    (ξ : Patterns Memory Neuron)
+    (μ : Memory)
+    (h : ∀ i,
+      stepAt F ξ (patternState ξ μ) i =
+        patternState ξ μ) :
+    IsStablePattern F ξ μ := by
+  exact h
+
 end LeanDAM

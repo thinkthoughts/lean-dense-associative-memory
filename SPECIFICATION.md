@@ -409,35 +409,119 @@ For a binary state `σ` and neuron `i`, specify the candidate states
 
 Define an asynchronous single-neuron update by comparing their energies and selecting a lower-energy candidate.
 
-### First theorem target
+### Verified binary dynamics
 
-Prove
+Lean defines the binary-state predicate
 
 ```text
-E(updateᵢ(σ)) ≤ E(σ).
+IsSpinState σ
 ```
 
-The structural reason is that the current binary state already has either `−1` or `+1` at neuron `i`; it is therefore one of the two candidate configurations considered by the update.
+together with the two candidate configurations
 
-### Source-correspondence target
+```text
+candidateNeg σ i = σ[i ↦ −1]
+candidatePos σ i = σ[i ↦ +1].
+```
 
-After proving abstract energy monotonicity, specialize the construction to the DAM energy and recover the energy comparison represented by Eq. (4).
+The update `stepAt` compares the energies of these candidates and selects the positive candidate where
 
-The exact Lean representation of binary states, tie behavior, and the Eq. (4) correspondence should be fixed before implementation.
+```text
+E(candidatePos σ i) ≤ E(candidateNeg σ i),
+```
 
-Do not substitute an induced-field update.
+and the negative candidate otherwise.
+
+Thus the implementation fixes the tie convention explicitly:
+
+```text
+equal candidate energies → +1.
+```
+
+Lean verifies
+
+```text
+E(stepAt F ξ σ i) ≤ E(σ)
+```
+
+for every binary spin state `σ`.
+
+Lean also verifies that a single asynchronous update preserves the binary-state constraint.
+
+### Equation (4) correspondence
+
+Define the clamped overlap excluding neuron `i` by
+
+```text
+clampedOverlap μ σ i
+= Σ_{j ≠ i} ξⱼᵘ σⱼ.
+```
+
+Lean verifies the two candidate-overlap identities
+
+```text
+overlap μ (σ[i ↦ +1])
+= ξᵢᵘ + clampedOverlap μ σ i
+```
+
+and
+
+```text
+overlap μ (σ[i ↦ −1])
+= -ξᵢᵘ + clampedOverlap μ σ i.
+```
+
+Define
+
+```text
+updateGap
+= Σᵤ [
+    F(ξᵢᵘ + clampedOverlap μ σ i)
+    -
+    F(-ξᵢᵘ + clampedOverlap μ σ i)
+  ].
+```
+
+This is the energy-comparison expression appearing inside the sign in Krotov–Hopfield Eq. (4).
+
+Lean verifies
+
+```text
+updateGap
+=
+E(candidateNeg σ i)
+-
+E(candidatePos σ i).
+```
+
+Therefore the sign comparison in Eq. (4) is recovered directly from the generalized DAM energy: a positive `updateGap` means the `+1` candidate has lower energy, while a negative `updateGap` means the `−1` candidate has lower energy.
+
+The Lean update uses the explicit tie convention `updateGap = 0 → +1` rather than adding an independent convention for `Sign(0)`.
+
+No induced-field update is substituted.
 
 ### CP5 stopping condition
 
-CP5 is complete where Lean verifies:
+- [x] Specify a binary-state representation compatible with CP2–CP4.
+- [x] Specify replacement of one neuron by either binary value.
+- [x] Define the energy-based single-neuron update.
+- [x] Prove non-increase of energy under that update.
+- [x] Recover the energy comparison represented by Krotov–Hopfield Eq. (4).
 
-1. a binary-state representation compatible with CP2–CP4;
-2. replacement of one neuron by either binary value;
-3. the energy-based single-neuron update;
-4. non-increase of energy under that update;
-5. the justified Eq. (4) correspondence, if it belongs naturally in this checkpoint.
+CP5 is complete.
 
-Fixed-point stability and capacity are not prerequisites for CP5.
+Lean verifies the source-specific chain
+
+```text
+binary state
+→ two single-neuron candidate states
+→ energy comparison
+→ asynchronous update
+→ non-increasing energy
+→ Eq. (4) energy-gap correspondence.
+```
+
+Fixed-point stability and capacity remain separate specifications and are not inferred from CP5.
 
 ## CP6 — Stability and Capacity Boundary
 

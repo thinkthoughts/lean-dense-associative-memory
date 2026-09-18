@@ -119,4 +119,90 @@ theorem flipEnergyGap_eq_neg_updateGap_of_neg
   rw [hflip, hcurrent]
   ring
 
+/--
+A binary stored pattern has self-overlap equal to the number of neurons.
+This is the exact `N` appearing in the capacity calculation.
+-/
+theorem overlap_self_of_binary
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    (ξ : Patterns Memory Neuron)
+    (μ : Memory)
+    (hbinary : IsBinaryPattern ξ μ) :
+    overlap ξ (patternState ξ μ) μ =
+      (Fintype.card Neuron : ℝ) := by
+  unfold overlap patternState
+  have hterm : ∀ i, ξ μ i * ξ μ i = (1 : ℝ) := by
+    intro i
+    rcases hbinary i with hpos | hneg
+    · rw [hpos]
+      norm_num
+    · rw [hneg]
+      norm_num
+  simp_rw [hterm]
+  simp
+
+/--
+Flipping one coordinate of a binary stored pattern changes its
+self-overlap from `N` to `N - 2`.
+-/
+theorem overlap_self_flip_of_binary
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    [DecidableEq Neuron]
+    (ξ : Patterns Memory Neuron)
+    (μ : Memory)
+    (i : Neuron)
+    (hbinary : IsBinaryPattern ξ μ) :
+    overlap ξ (flip (patternState ξ μ) i) μ =
+      (Fintype.card Neuron : ℝ) - 2 := by
+  unfold overlap flip patternState
+  rw [← Finset.add_sum_erase _ _ (Finset.mem_univ i)]
+  have hi : ξ μ i * (-ξ μ i) = (-1 : ℝ) := by
+    rcases hbinary i with hpos | hneg
+    · rw [hpos]
+      norm_num
+    · rw [hneg]
+      norm_num
+  rw [hi]
+  have hrest :
+      ∑ j ∈ Finset.univ.erase i,
+          ξ μ j * Function.update (ξ μ) i (-ξ μ i) j =
+        ∑ j ∈ Finset.univ.erase i, (1 : ℝ) := by
+    apply Finset.sum_congr rfl
+    intro j hj
+    have hji : j ≠ i := by
+      simpa using hj
+    simp only [Function.update_noteq hji]
+    rcases hbinary j with hpos | hneg
+    · rw [hpos]
+      norm_num
+    · rw [hneg]
+      norm_num
+  rw [hrest]
+  simp
+  norm_num
+
+/--
+For polynomial separation `F(x) = x^n`, the selected stored memory
+contributes exactly `N^n - (N - 2)^n` to the one-flip energy gap.
+This is the exact signal term used before the paper's asymptotic
+approximation.
+-/
+theorem self_signal_term
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    [DecidableEq Neuron]
+    (n : ℕ)
+    (ξ : Patterns Memory Neuron)
+    (μ : Memory)
+    (i : Neuron)
+    (hbinary : IsBinaryPattern ξ μ) :
+    (overlap ξ (patternState ξ μ) μ) ^ n -
+        (overlap ξ (flip (patternState ξ μ) i) μ) ^ n =
+      (Fintype.card Neuron : ℝ) ^ n -
+        ((Fintype.card Neuron : ℝ) - 2) ^ n := by
+  rw [overlap_self_of_binary ξ μ hbinary]
+  rw [overlap_self_flip_of_binary ξ μ i hbinary]
+
 end LeanDAM

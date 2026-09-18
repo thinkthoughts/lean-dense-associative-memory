@@ -187,13 +187,12 @@ theorem overlap_self_flip_of_binary
     simp [Function.update, hji, hsq j]
   rw [hrest]
   simp only [Finset.sum_const, nsmul_eq_mul]
-  have hcard : 0 < Fintype.card Neuron := by
-    exact Fintype.card_pos_iff.mpr ⟨i⟩
+  have hcard : 1 ≤ Fintype.card Neuron := by
+    exact Nat.one_le_iff_ne_zero.mpr (Fintype.card_ne_zero.mpr ⟨i⟩)
   rw [Finset.card_erase_of_mem (Finset.mem_univ i)]
   simp only [Finset.card_univ]
-  push_cast
-  norm_num
-  omega
+  push_cast [Nat.sub_eq_iff_eq_add hcard]
+  ring
 
 /--
 For polynomial separation `F(x) = x^n`, the selected stored memory

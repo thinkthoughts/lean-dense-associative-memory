@@ -149,10 +149,6 @@ theorem overlap_self_of_binary
 Flipping one coordinate of a binary stored pattern changes its
 self-overlap from `N` to `N - 2`.
 -/
-/--
-Flipping one coordinate of a binary stored pattern changes its
-self-overlap from `N` to `N - 2`.
--/
 theorem overlap_self_flip_of_binary
     {Neuron Memory : Type}
     [Fintype Neuron]

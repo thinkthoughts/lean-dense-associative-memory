@@ -76,7 +76,6 @@ theorem flipEnergyGap_eq_updateGap_of_pos
         candidateNeg (patternState ξ μ) i := by
     unfold candidateNeg
     rw [h]
-    norm_num
   have hcurrent :
       candidatePos (patternState ξ μ) i =
         patternState ξ μ := by
@@ -110,7 +109,6 @@ theorem flipEnergyGap_eq_neg_updateGap_of_neg
         candidatePos (patternState ξ μ) i := by
     unfold candidatePos
     rw [h]
-    norm_num
   have hcurrent :
       candidateNeg (patternState ξ μ) i =
         patternState ξ μ := by
@@ -118,5 +116,6 @@ theorem flipEnergyGap_eq_neg_updateGap_of_neg
     rw [← h]
     exact Function.update_eq_self i (patternState ξ μ)
   rw [hflip, hcurrent]
+  ring
 
 end LeanDAM

@@ -219,52 +219,228 @@ The exact finite-index representation used in Lean may refine the notation while
 
 ## CP2 — Pattern / State Overlap
 
-- [ ] Specify finite neuron and memory index types.
-- [ ] Specify dynamical state values.
-- [ ] Specify memorized patterns.
-- [ ] Define pattern-state overlap.
-- [ ] Prove elementary overlap consequences needed by the energy layer.
+- [x] Specify finite neuron and memory index types.
+- [x] Specify dynamical state values.
+- [x] Specify memorized patterns.
+- [x] Define pattern-state overlap.
+- [x] Prove elementary overlap consequences needed by the energy layer.
+
+CP2 is complete.
+
+The algebraic layer uses real-valued states and patterns. This is a deliberate generalization of the binary state space presented at RP1. Its admissibility for CP2–CP4 follows from the algebraic statements proved there; source-specific dynamics are revisited at RP2.
 
 ## CP3 — Generalized DAM Energy
 
-- [ ] Define a separation function.
-- [ ] Define generalized DAM energy from overlaps.
-- [ ] Define the quadratic separation function.
-- [ ] State and prove that quadratic specialization recovers the displayed Hopfield overlap energy.
+- [x] Define a separation function.
+- [x] Define generalized DAM energy from overlaps.
+- [x] Define the quadratic separation function.
+- [x] State and prove that quadratic specialization recovers the displayed quadratic overlap energy.
 
-## CP4 — Hopfield Interaction Form
+CP3 is complete.
 
-- [ ] Define the interaction matrix `Tᵢⱼ`.
-- [ ] Expand the quadratic overlap energy.
-- [ ] Prove equivalence with the displayed interaction-matrix form.
-- [ ] Keep normalization and indexing conventions explicit.
+## CP4 — Interaction-Matrix Expansion
 
-## CP5 — Dynamics and Fixed-Point Boundary
+- [x] Define the interaction matrix `Tᵢⱼ`.
+- [x] Expand the quadratic overlap energy.
+- [x] Prove equivalence with the interaction-matrix form.
+- [x] Keep normalization and indexing conventions explicit.
 
-Return to the seminar's energy-descent and fixed-point claims only after recovering their exact mathematical hypotheses from a primary source.
+CP4 is complete.
 
-Candidate questions include:
-
-- What update rule is assumed?
-- Is the state discrete, continuous, or both in the relevant result?
-- What conditions on `F` are required?
-- In what sense is energy descending?
-- What definition of stability is used?
-- What hypotheses guarantee convergence or fixed-point stability?
-
-No stronger convergence or stability theorem is inferred from RP1 alone.
-
-## CP6 — Capacity Boundary
-
-Use a primary source to specify the hypotheses behind the displayed capacity relations before encoding them as Lean propositions.
-
-Distinguish:
+Lean verifies
 
 ```text
-displayed scaling relation
-≠ exact theorem statement
-≠ empirical storage result
+E_F
+→ F(x) = x²
+→ E₂ = - Σᵤ (Σᵢ ξᵢᵘ σᵢ)²
+→ Tᵢⱼ = Σᵤ ξᵢᵘ ξⱼᵘ
+→ E₂ = - Σᵢ Σⱼ σᵢ Tᵢⱼ σⱼ.
 ```
+
+This is the interaction-matrix expansion of the quadratic generalized energy.
+
+RP2 refines the relationship between this identity and the conventional Hopfield normalization.
+
+## Reading Point 2 — Krotov–Hopfield Dense Associative Memory
+
+**Source:** Dmitry Krotov and John J. Hopfield, *Dense Associative Memory for Pattern Recognition*, arXiv:1606.01164v2.
+
+RP2 recovers the primary-source hypotheses needed to refine the dynamics, stability, and capacity boundaries left open at RP1.
+
+### Binary state-space refinement
+
+The source begins with `N` binary neurons whose states take values in
+
+```text
+{−1, +1}.
+```
+
+Stored memories are initially binary patterns as well.
+
+CP2–CP4 use real-valued states and patterns. That representation is sufficient for the algebraic identities proved there. RP2 narrows the admissible state space for source-specific asynchronous dynamics, stability, and capacity statements.
+
+Thus
+
+```text
+real-valued algebraic state
+≠ source-specific binary dynamical state.
+```
+
+The former remains the verified CP2–CP4 layer. The latter is introduced where required beginning at CP5.
+
+### Energy-normalization refinement
+
+The generalized DAM energy in the primary source is
+
+```text
+E_F(σ) = - Σᵤ F(Σᵢ ξᵢᵘ σᵢ).
+```
+
+For the polynomial choice
+
+```text
+F(x) = x²,
+```
+
+CP3 and CP4 verify
+
+```text
+E₂(σ)
+= - Σᵤ (Σᵢ ξᵢᵘ σᵢ)²
+= - Σᵢ Σⱼ σᵢ Tᵢⱼ σⱼ,
+```
+
+where
+
+```text
+Tᵢⱼ = Σᵤ ξᵢᵘ ξⱼᵘ.
+```
+
+The primary source separately displays the conventional standard associative-memory energy with normalization
+
+```text
+E_standard
+= - 1/2 Σᵢ Σⱼ Tᵢⱼ σᵢ σⱼ.
+```
+
+The paper states that its polynomial `n = 2` model reduces to the standard associative-memory model.
+
+RP2 therefore refines the RP1 wording: CP4 proves the interaction-matrix expansion of the quadratic generalized energy. Literal identification with the separately displayed standard energy requires accounting for its normalization convention.
+
+### Asynchronous energy-based dynamics
+
+After defining the generalized energy, the source specifies an asynchronous update rule in which one neuron is updated at a time.
+
+For a selected neuron `i`, all other neuron states remain fixed while the energy is compared between the two candidate configurations
+
+```text
+σ[i ↦ −1]
+```
+
+and
+
+```text
+σ[i ↦ +1].
+```
+
+Equation (4) expresses the selected binary value using the sign of this energy difference.
+
+The update chooses a neuron value so that the energy of the entire configuration decreases or remains unchanged.
+
+The source explicitly distinguishes this energy-difference rule from updates based on induced magnetic fields. The rules differ slightly because self-coupling terms are present.
+
+Therefore CP5 must formalize the source's energy-based update rather than substitute a conventional Hopfield field update.
+
+### Stability and capacity assumptions
+
+The source's capacity analysis introduces additional assumptions:
+
+- stored memories are random binary patterns;
+- each memory component takes `−1` or `+1` with equal probability;
+- the system is initialized at one of the stored memories;
+- stability is examined against a one-neuron flip;
+- the calculation separates a mean energy gap from fluctuations;
+- the stated error estimate uses an effectively Gaussian noise approximation in the large-`N`, large-`K` regime.
+
+For a selected error threshold, the paper gives the scaling
+
+```text
+Kmax = αₙ Nⁿ⁻¹,
+```
+
+where `αₙ` depends on that threshold.
+
+For the stronger perfect-recovery condition it uses
+
+```text
+Perror < 1/N
+```
+
+and derives a corresponding asymptotic expression.
+
+These probabilistic and asymptotic statements require specifications beyond the deterministic CP2–CP5 algebra.
+
+## CP5 — Binary Asynchronous Energy Update
+
+### Formalization target
+
+Introduce the smallest binary-state layer required by RP2 without replacing the verified real-valued CP2–CP4 API.
+
+For a binary state `σ` and neuron `i`, specify the candidate states
+
+```text
+σ[i ↦ −1]
+σ[i ↦ +1].
+```
+
+Define an asynchronous single-neuron update by comparing their energies and selecting a lower-energy candidate.
+
+### First theorem target
+
+Prove
+
+```text
+E(updateᵢ(σ)) ≤ E(σ).
+```
+
+The structural reason is that the current binary state already has either `−1` or `+1` at neuron `i`; it is therefore one of the two candidate configurations considered by the update.
+
+### Source-correspondence target
+
+After proving abstract energy monotonicity, specialize the construction to the DAM energy and recover the energy comparison represented by Eq. (4).
+
+The exact Lean representation of binary states, tie behavior, and the Eq. (4) correspondence should be fixed before implementation.
+
+Do not substitute an induced-field update.
+
+### CP5 stopping condition
+
+CP5 is complete where Lean verifies:
+
+1. a binary-state representation compatible with CP2–CP4;
+2. replacement of one neuron by either binary value;
+3. the energy-based single-neuron update;
+4. non-increase of energy under that update;
+5. the justified Eq. (4) correspondence, if it belongs naturally in this checkpoint.
+
+Fixed-point stability and capacity are not prerequisites for CP5.
+
+## CP6 — Stability and Capacity Boundary
+
+CP6 begins only after CP5 establishes the source-specific binary dynamics.
+
+The next specification must distinguish
+
+```text
+deterministic one-step energy monotonicity
+≠ stability of a stored pattern
+≠ probabilistic storage capacity
+≠ asymptotic capacity scaling.
+```
+
+Any formalization of the paper's capacity results must make explicit the random-pattern model, equiprobable binary components, stability criterion, asymptotic regime, Gaussian approximation, and error threshold.
+
+No capacity theorem is inferred from CP2–CP5 alone.
 
 ## CP7 — Energy Transformer Boundary
 

@@ -351,4 +351,85 @@ noncomputable def coordinatePMF
   PMF.map (fun ω : Omega Memory Neuron => ω μ i)
     (uniformSamples Memory Neuron)
 
+/--
+For a fixed coordinate `(μ, i)`, exactly half of all Boolean samples
+have value `true` at that coordinate.
+-/
+theorem coordinate_true_fiber_card
+    (Memory Neuron : Type)
+    [Fintype Memory]
+    [Fintype Neuron]
+    (μ : Memory)
+    (i : Neuron) :
+    Fintype.card {ω : Omega Memory Neuron // ω μ i = true} * 2 =
+      Fintype.card (Omega Memory Neuron) := by
+  classical
+  let toggle : Omega Memory Neuron → Omega Memory Neuron :=
+    fun ω μ' i' =>
+      if μ' = μ ∧ i' = i then !(ω μ' i') else ω μ' i'
+
+  have hinvol : Function.Involutive toggle := by
+    intro ω
+    funext μ' i'
+    by_cases h : μ' = μ ∧ i' = i
+    · simp [toggle, h]
+    · simp [toggle, h]
+
+  let e :
+      {ω : Omega Memory Neuron // ω μ i = true} ≃
+        {ω : Omega Memory Neuron // ω μ i = false} :=
+    { toFun := fun ω =>
+        ⟨toggle ω.1, by
+          simp [toggle, ω.2]⟩
+      invFun := fun ω =>
+        ⟨toggle ω.1, by
+          simp [toggle, ω.2]⟩
+      left_inv := by
+        intro ω
+        apply Subtype.ext
+        exact hinvol ω.1
+      right_inv := by
+        intro ω
+        apply Subtype.ext
+        exact hinvol ω.1 }
+
+  have heq :
+      Fintype.card {ω : Omega Memory Neuron // ω μ i = true} =
+        Fintype.card {ω : Omega Memory Neuron // ω μ i = false} :=
+    Fintype.card_congr e
+
+  have hsplit :
+      Fintype.card (Omega Memory Neuron) =
+        Fintype.card {ω : Omega Memory Neuron // ω μ i = true} +
+        Fintype.card {ω : Omega Memory Neuron // ω μ i = false} := by
+    classical
+    let f : Omega Memory Neuron → Bool := fun ω => ω μ i
+    simpa [f] using
+      (Fintype.card_congr
+        (Equiv.sigmaFiberEquiv f))
+
+  omega
+
+/--
+A fixed Boolean coordinate is `true` with probability one half
+under the uniform sample distribution.
+-/
+theorem coordinatePMF_true
+    (Memory Neuron : Type)
+    [Fintype Memory]
+    [Fintype Neuron]
+    (μ : Memory)
+    (i : Neuron) :
+    coordinatePMF Memory Neuron μ i true = (2 : ENNReal)⁻¹ := by
+  classical
+  unfold coordinatePMF uniformSamples
+  simp only [PMF.map_apply, PMF.uniformOfFintype_apply]
+  rw [tsum_fintype]
+  have hcard := coordinate_true_fiber_card Memory Neuron μ i
+  -- The remaining finite sum is the size of the `true` fiber times
+  -- the common uniform mass.
+  simp only [Bool.true_eq]
+  rw [← Finset.sum_filter]
+  simp
+
 end LeanDAM

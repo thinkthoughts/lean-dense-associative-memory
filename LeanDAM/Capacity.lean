@@ -337,4 +337,18 @@ noncomputable def uniformSamples
     ⟨fun _ _ => false⟩
   exact PMF.uniformOfFintype (Omega Memory Neuron)
 
+/--
+The marginal probability law of one Boolean pattern coordinate
+under the uniform sample-space distribution.
+-/
+noncomputable def coordinatePMF
+    (Memory Neuron : Type)
+    [Fintype Memory]
+    [Fintype Neuron]
+    (μ : Memory)
+    (i : Neuron) :
+    PMF Bool :=
+  PMF.map (fun ω : Omega Memory Neuron => ω μ i)
+    (uniformSamples Memory Neuron)
+
 end LeanDAM

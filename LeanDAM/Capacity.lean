@@ -146,6 +146,38 @@ theorem overlap_self_of_binary
 Flipping one coordinate of a binary stored pattern changes its
 self-overlap from `N` to `N - 2`.
 -/
+/--
+A binary stored pattern has self-overlap equal to the number of neurons.
+This is the exact `N` appearing in the capacity calculation.
+-/
+theorem overlap_self_of_binary
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    (ξ : Patterns Memory Neuron)
+    (μ : Memory)
+    (hbinary : IsBinaryPattern ξ μ) :
+    overlap ξ (patternState ξ μ) μ =
+      (Fintype.card Neuron : ℝ) := by
+  unfold overlap
+  have hterm : ∀ i, ξ μ i * patternState ξ μ i = (1 : ℝ) := by
+    intro i
+    rcases hbinary i with hpos | hneg
+    · rw [hpos]
+      change ξ μ i * 1 = 1
+      simpa [patternState] using hpos
+    · rw [hneg]
+      change ξ μ i * -1 = 1
+      have hx : ξ μ i = -1 := by
+        simpa [patternState] using hneg
+      rw [hx]
+      norm_num
+  simp_rw [hterm]
+  simp
+
+/--
+Flipping one coordinate of a binary stored pattern changes its
+self-overlap from `N` to `N - 2`.
+-/
 theorem overlap_self_flip_of_binary
     {Neuron Memory : Type}
     [Fintype Neuron]
@@ -156,29 +188,48 @@ theorem overlap_self_flip_of_binary
     (hbinary : IsBinaryPattern ξ μ) :
     overlap ξ (flip (patternState ξ μ) i) μ =
       (Fintype.card Neuron : ℝ) - 2 := by
-  unfold overlap flip patternState
+  unfold overlap flip
   rw [← Finset.add_sum_erase _ _ (Finset.mem_univ i)]
-  have hi : ξ μ i * (-ξ μ i) = (-1 : ℝ) := by
+
+  have hi :
+      ξ μ i *
+          Function.update (patternState ξ μ) i
+            (-patternState ξ μ i) i =
+        (-1 : ℝ) := by
+    simp only [Function.update_same]
     rcases hbinary i with hpos | hneg
-    · rw [hpos]
+    · have hx : ξ μ i = 1 := by
+        simpa [patternState] using hpos
+      rw [hx]
       norm_num
-    · rw [hneg]
+    · have hx : ξ μ i = -1 := by
+        simpa [patternState] using hneg
+      rw [hx]
       norm_num
+
   rw [hi]
+
   have hrest :
       ∑ j ∈ Finset.univ.erase i,
-          ξ μ j * Function.update (ξ μ) i (-ξ μ i) j =
+          ξ μ j *
+            Function.update (patternState ξ μ) i
+              (-patternState ξ μ i) j =
         ∑ j ∈ Finset.univ.erase i, (1 : ℝ) := by
     apply Finset.sum_congr rfl
     intro j hj
     have hji : j ≠ i := by
       simpa using hj
-    simp only [Function.update_noteq hji]
+    rw [Function.update_noteq hji]
     rcases hbinary j with hpos | hneg
-    · rw [hpos]
+    · have hx : ξ μ j = 1 := by
+        simpa [patternState] using hpos
+      rw [hpos, hx]
       norm_num
-    · rw [hneg]
+    · have hx : ξ μ j = -1 := by
+        simpa [patternState] using hneg
+      rw [hneg, hx]
       norm_num
+
   rw [hrest]
   simp
   norm_num

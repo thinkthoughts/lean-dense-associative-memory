@@ -376,8 +376,8 @@ theorem stablePattern_of_candidate_energy
   unfold stepAt
   rcases hbinary i with hpos | hneg
   · have h := henergy i
-    rw [if_pos hpos] at h
-    rw [if_pos h]
+    rw [ite_eq_left hpos] at h
+    rw [ite_eq_left h]
     unfold candidatePos
     rw [← hpos]
     exact Function.update_eq_self i (patternState ξ μ)
@@ -386,12 +386,12 @@ theorem stablePattern_of_candidate_energy
       rw [h] at hneg
       norm_num at hneg
     have h := henergy i
-    rw [if_neg hnot] at h
+    rw [ite_eq_right hnot] at h
     have hchoice :
         ¬ energy F ξ (candidatePos (patternState ξ μ) i) ≤
             energy F ξ (candidateNeg (patternState ξ μ) i) := by
       exact not_le_of_gt h
-    rw [if_neg hchoice]
+    rw [ite_eq_right hchoice]
     unfold candidateNeg
     rw [← hneg]
     exact Function.update_eq_self i (patternState ξ μ)
@@ -424,9 +424,9 @@ theorem stablePattern_of_updateGap
   have h := hgap i
   rw [updateGap_eq_energy_difference] at h
   by_cases hpos : patternState ξ μ i = 1
-  · rw [if_pos hpos] at h ⊢
+  · rw [ite_eq_left hpos] at h ⊢
     linarith
-  · rw [if_neg hpos] at h ⊢
+  · rw [ite_eq_right hpos] at h ⊢
     linarith
 
 end LeanDAM

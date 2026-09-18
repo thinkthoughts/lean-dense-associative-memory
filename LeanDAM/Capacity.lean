@@ -192,7 +192,7 @@ theorem overlap_self_flip_of_binary
   have hcard : 1 ≤ Fintype.card Neuron := by
     exact Fintype.card_pos_iff.mpr ⟨i⟩
   rw [Nat.cast_sub hcard]
-  norm_num
+  linarith
 
 /--
 For polynomial separation `F(x) = x^n`, the selected stored memory

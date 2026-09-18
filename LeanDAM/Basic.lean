@@ -221,5 +221,106 @@ theorem stepAt_isSpinState
       right
       simp [candidateNeg]
     · simpa [candidateNeg, Function.update, hj] using hσ j
+/--
+The overlap contribution from all neurons except `i`.
+
+This is the clamped contribution appearing in the source's
+asynchronous update equation.
+-/
+def clampedOverlap
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    [DecidableEq Neuron]
+    (ξ : Patterns Memory Neuron)
+    (σ : State Neuron)
+    (μ : Memory)
+    (i : Neuron) : ℝ :=
+  ∑ j ∈ Finset.univ.erase i, ξ μ j * σ j
+
+/--
+The energy-comparison expression appearing inside the sign
+in Krotov–Hopfield Eq. (4).
+-/
+def updateGap
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    [Fintype Memory]
+    [DecidableEq Neuron]
+    (F : Separation)
+    (ξ : Patterns Memory Neuron)
+    (σ : State Neuron)
+    (i : Neuron) : ℝ :=
+  ∑ μ,
+    (F (ξ μ i + clampedOverlap ξ σ μ i) -
+     F (-ξ μ i + clampedOverlap ξ σ μ i))
+
+/--
+Replacing neuron `i` by `+1` gives the overlap appearing in
+the positive candidate of Eq. (4).
+-/
+lemma overlap_candidatePos
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    [DecidableEq Neuron]
+    (ξ : Patterns Memory Neuron)
+    (σ : State Neuron)
+    (μ : Memory)
+    (i : Neuron) :
+    overlap ξ (candidatePos σ i) μ =
+      ξ μ i + clampedOverlap ξ σ μ i := by
+  unfold overlap candidatePos clampedOverlap
+  rw [← Finset.add_sum_erase _ _ (Finset.mem_univ i)]
+  congr 1
+  · simp
+  · apply Finset.sum_congr rfl
+    intro j hj
+    have hji : j ≠ i := by
+      simpa using hj
+    simp [Function.update, hji]
+
+/--
+Replacing neuron `i` by `-1` gives the overlap appearing in
+the negative candidate of Eq. (4).
+-/
+lemma overlap_candidateNeg
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    [DecidableEq Neuron]
+    (ξ : Patterns Memory Neuron)
+    (σ : State Neuron)
+    (μ : Memory)
+    (i : Neuron) :
+    overlap ξ (candidateNeg σ i) μ =
+      -ξ μ i + clampedOverlap ξ σ μ i := by
+  unfold overlap candidateNeg clampedOverlap
+  rw [← Finset.add_sum_erase _ _ (Finset.mem_univ i)]
+  congr 1
+  · simp
+  · apply Finset.sum_congr rfl
+    intro j hj
+    have hji : j ≠ i := by
+      simpa using hj
+    simp [Function.update, hji]
+
+/--
+Krotov–Hopfield Eq. (4)'s comparison quantity is exactly the
+energy difference between the negative and positive candidate states.
+-/
+theorem updateGap_eq_energy_difference
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    [Fintype Memory]
+    [DecidableEq Neuron]
+    (F : Separation)
+    (ξ : Patterns Memory Neuron)
+    (σ : State Neuron)
+    (i : Neuron) :
+    updateGap F ξ σ i =
+      energy F ξ (candidateNeg σ i) -
+        energy F ξ (candidatePos σ i) := by
+  unfold updateGap energy
+  simp_rw [overlap_candidatePos, overlap_candidateNeg]
+  rw [Finset.sum_sub_distrib]
+  ring
 
 end LeanDAM

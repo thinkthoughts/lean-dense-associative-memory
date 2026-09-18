@@ -395,4 +395,38 @@ theorem stablePattern_of_candidate_energy
     unfold candidateNeg
     rw [← hneg]
     exact Function.update_eq_self i (patternState ξ μ)
+
+/--
+A binary stored pattern is stable if the Eq. (4) energy gap
+selects its current spin at every neuron.
+
+Because `stepAt` resolves ties toward `+1`, a stored `+1`
+requires a nonnegative gap, while a stored `-1` requires
+a strictly negative gap.
+-/
+theorem stablePattern_of_updateGap
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    [Fintype Memory]
+    [DecidableEq Neuron]
+    (F : Separation)
+    (ξ : Patterns Memory Neuron)
+    (μ : Memory)
+    (hbinary : IsBinaryPattern ξ μ)
+    (hgap : ∀ i,
+      if patternState ξ μ i = 1 then
+        0 ≤ updateGap F ξ (patternState ξ μ) i
+      else
+        updateGap F ξ (patternState ξ μ) i < 0) :
+    IsStablePattern F ξ μ := by
+  apply stablePattern_of_candidate_energy F ξ μ hbinary
+  intro i
+  have h := hgap i
+  rw [updateGap_eq_energy_difference] at h
+  by_cases hpos : patternState ξ μ i = 1
+  · rw [if_pos hpos] at h ⊢
+    linarith
+  · rw [if_neg hpos] at h ⊢
+    linarith
+
 end LeanDAM

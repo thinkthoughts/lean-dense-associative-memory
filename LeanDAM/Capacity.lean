@@ -13,7 +13,7 @@ def flip
     (σ : State Neuron)
     (i : Neuron) : State Neuron :=
   Function.update σ i (-σ i)
-
+3
 /--
 Energy change produced by flipping neuron `i`.
 
@@ -324,15 +324,18 @@ theorem areBinaryPatterns_patternsOf
     (ω : Omega Memory Neuron) :
     AreBinaryPatterns (patternsOf ω) := by
   intro μ i
-  unfold patternsOf toPM
-  cases ω μ i <;> simp
+  change toPM (ω μ i) = 1 ∨ toPM (ω μ i) = -1
+  cases h : ω μ i <;> simp [toPM, h]
 
 /-- Uniform probability law on the finite Boolean sample space. -/
 noncomputable def uniformSamples
     (Memory Neuron : Type)
     [Fintype Memory]
     [Fintype Neuron] :
-    PMF (Omega Memory Neuron) :=
-  PMF.uniformOfFintype (Omega Memory Neuron)
+    PMF (Omega Memory Neuron) := by
+  letI : Fintype (Omega Memory Neuron) := Fintype.ofFinite _
+  letI : Nonempty (Omega Memory Neuron) :=
+    ⟨fun _ _ => false⟩
+  exact PMF.uniformOfFintype (Omega Memory Neuron)
 
 end LeanDAM

@@ -351,10 +351,11 @@ def IsStablePattern
   ∀ i, stepAt F ξ (patternState ξ μ) i = patternState ξ μ
 
 /--
-If, at every neuron, the current value of a binary stored pattern
-is selected by the energy comparison, then the stored pattern is stable.
+If every neuron of a binary stored pattern already minimizes
+the energy among its two candidate spin values, then the
+stored pattern is stable under asynchronous updates.
 -/
-theorem stablePattern_of_stepAt_eq
+theorem stablePattern_of_candidate_energy
     {Neuron Memory : Type}
     [Fintype Neuron]
     [Fintype Memory]
@@ -362,10 +363,36 @@ theorem stablePattern_of_stepAt_eq
     (F : Separation)
     (ξ : Patterns Memory Neuron)
     (μ : Memory)
-    (h : ∀ i,
-      stepAt F ξ (patternState ξ μ) i =
-        patternState ξ μ) :
+    (hbinary : IsBinaryPattern ξ μ)
+    (henergy : ∀ i,
+      if patternState ξ μ i = 1 then
+        energy F ξ (candidatePos (patternState ξ μ) i) ≤
+          energy F ξ (candidateNeg (patternState ξ μ) i)
+      else
+        energy F ξ (candidateNeg (patternState ξ μ) i) <
+          energy F ξ (candidatePos (patternState ξ μ) i)) :
     IsStablePattern F ξ μ := by
-  exact h
-
+  intro i
+  unfold stepAt
+  rcases hbinary i with hpos | hneg
+  · have h := henergy i
+    rw [if_pos hpos] at h
+    rw [if_pos h]
+    unfold candidatePos
+    rw [← hpos]
+    exact Function.update_eq_self i (patternState ξ μ)
+  · have hnot : patternState ξ μ i ≠ 1 := by
+      intro h
+      rw [h] at hneg
+      norm_num at hneg
+    have h := henergy i
+    rw [if_neg hnot] at h
+    have hchoice :
+        ¬ energy F ξ (candidatePos (patternState ξ μ) i) ≤
+            energy F ξ (candidateNeg (patternState ξ μ) i) := by
+      exact not_le_of_gt h
+    rw [if_neg hchoice]
+    unfold candidateNeg
+    rw [← hneg]
+    exact Function.update_eq_self i (patternState ξ μ)
 end LeanDAM

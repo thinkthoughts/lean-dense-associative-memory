@@ -52,4 +52,72 @@ theorem flipEnergyGap_stored_memory
   unfold flipEnergyGap energy polyF
   ring
 
+/--
+For a positive stored bit, flipping the bit produces the negative
+candidate, so the flip-energy gap equals the Eq. (4) update gap.
+-/
+theorem flipEnergyGap_eq_updateGap_of_pos
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    [Fintype Memory]
+    [DecidableEq Neuron]
+    (F : Separation)
+    (ξ : Patterns Memory Neuron)
+    (μ : Memory)
+    (i : Neuron)
+    (h : patternState ξ μ i = 1) :
+    flipEnergyGap F ξ (patternState ξ μ) i =
+      updateGap F ξ (patternState ξ μ) i := by
+  rw [updateGap_eq_energy_difference]
+  unfold flipEnergyGap flip
+  have hflip :
+      Function.update (patternState ξ μ) i
+          (-patternState ξ μ i) =
+        candidateNeg (patternState ξ μ) i := by
+    unfold candidateNeg
+    rw [h]
+    norm_num
+  have hcurrent :
+      candidatePos (patternState ξ μ) i =
+        patternState ξ μ := by
+    unfold candidatePos
+    rw [← h]
+    exact Function.update_eq_self i (patternState ξ μ)
+  rw [hflip, hcurrent]
+
+/--
+For a negative stored bit, flipping the bit produces the positive
+candidate, so the flip-energy gap is the negative of the Eq. (4)
+update gap.
+-/
+theorem flipEnergyGap_eq_neg_updateGap_of_neg
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    [Fintype Memory]
+    [DecidableEq Neuron]
+    (F : Separation)
+    (ξ : Patterns Memory Neuron)
+    (μ : Memory)
+    (i : Neuron)
+    (h : patternState ξ μ i = -1) :
+    flipEnergyGap F ξ (patternState ξ μ) i =
+      -updateGap F ξ (patternState ξ μ) i := by
+  rw [updateGap_eq_energy_difference]
+  unfold flipEnergyGap flip
+  have hflip :
+      Function.update (patternState ξ μ) i
+          (-patternState ξ μ i) =
+        candidatePos (patternState ξ μ) i := by
+    unfold candidatePos
+    rw [h]
+    norm_num
+  have hcurrent :
+      candidateNeg (patternState ξ μ) i =
+        patternState ξ μ := by
+    unfold candidateNeg
+    rw [← h]
+    exact Function.update_eq_self i (patternState ξ μ)
+  rw [hflip, hcurrent]
+  ring
+
 end LeanDAM

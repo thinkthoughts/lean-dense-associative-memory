@@ -128,4 +128,95 @@ theorem energy_quadratic_interaction
     _ = ∑ i, ∑ j, σ i * interaction ξ i j * σ j := by
           simp_rw [factor_interaction]
 
+/-- A state confined to the spin values {-1, 1}. -/
+def IsSpinState {Neuron : Type} (σ : State Neuron) : Prop :=
+  ∀ i, σ i = 1 ∨ σ i = -1
+
+/-- The state obtained from `σ` by setting neuron `i` to `1`. -/
+def candidatePos {Neuron : Type} [DecidableEq Neuron]
+    (σ : State Neuron) (i : Neuron) : State Neuron :=
+  Function.update σ i 1
+
+/-- The state obtained from `σ` by setting neuron `i` to `-1`. -/
+def candidateNeg {Neuron : Type} [DecidableEq Neuron]
+    (σ : State Neuron) (i : Neuron) : State Neuron :=
+  Function.update σ i (-1)
+
+/-- Asynchronous energy-minimizing update at neuron `i`. -/
+noncomputable def stepAt
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    [Fintype Memory]
+    [DecidableEq Neuron]
+    (F : Separation)
+    (ξ : Patterns Memory Neuron)
+    (σ : State Neuron)
+    (i : Neuron) : State Neuron :=
+  if energy F ξ (candidatePos σ i) ≤ energy F ξ (candidateNeg σ i)
+  then candidatePos σ i
+  else candidateNeg σ i
+
+/--
+A source-specific asynchronous update cannot increase the energy
+of a binary spin state.
+-/
+theorem energy_stepAt_le
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    [Fintype Memory]
+    [DecidableEq Neuron]
+    (F : Separation)
+    (ξ : Patterns Memory Neuron)
+    (σ : State Neuron)
+    (i : Neuron)
+    (hσ : IsSpinState σ) :
+    energy F ξ (stepAt F ξ σ i) ≤ energy F ξ σ := by
+  unfold stepAt
+  rcases hσ i with h1 | h1
+  · have hσ_eq : candidatePos σ i = σ := by
+      unfold candidatePos
+      rw [← h1]
+      exact Function.update_eq_self i σ
+    split_ifs with h
+    · rw [hσ_eq]
+    · rw [← hσ_eq] at h ⊢
+      linarith [h]
+  · have hσ_eq : candidateNeg σ i = σ := by
+      unfold candidateNeg
+      rw [← h1]
+      exact Function.update_eq_self i σ
+    split_ifs with h
+    · rw [hσ_eq] at h ⊢
+      linarith [h]
+    · rw [hσ_eq]
+
+/-- A single asynchronous update preserves the binary spin-state constraint. -/
+theorem stepAt_isSpinState
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    [Fintype Memory]
+    [DecidableEq Neuron]
+    (F : Separation)
+    (ξ : Patterns Memory Neuron)
+    (σ : State Neuron)
+    (i : Neuron)
+    (hσ : IsSpinState σ) :
+    IsSpinState (stepAt F ξ σ i) := by
+  unfold stepAt IsSpinState
+  split_ifs
+  · intro j
+    unfold candidatePos
+    by_cases hj : j = i
+    · subst hj
+      simp
+    · simp [Function.update_noteq hj]
+      exact hσ j
+  · intro j
+    unfold candidateNeg
+    by_cases hj : j = i
+    · subst hj
+      simp
+    · simp [Function.update_noteq hj]
+      exact hσ j
+
 end LeanDAM

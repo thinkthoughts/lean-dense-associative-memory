@@ -234,4 +234,48 @@ theorem self_signal_term
   rw [overlap_self_of_binary ξ μ hbinary]
   rw [overlap_self_flip_of_binary ξ μ i hbinary]
 
+/--
+The energy-gap contribution from memories other than the selected one.
+-/
+def noiseTerm
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    [Fintype Memory]
+    [DecidableEq Neuron]
+    [DecidableEq Memory]
+    (n : ℕ)
+    (ξ : Patterns Memory Neuron)
+    (μ : Memory)
+    (i : Neuron) : ℝ :=
+  ∑ ν ∈ Finset.univ.erase μ,
+    ((overlap ξ (patternState ξ μ) ν) ^ n -
+      (overlap ξ (flip (patternState ξ μ) i) ν) ^ n)
+
+/--
+The one-flip energy gap splits exactly into the selected memory's
+signal contribution and the contribution from every other stored memory.
+-/
+theorem flipEnergyGap_signal_noise_decomposition
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    [Fintype Memory]
+    [DecidableEq Neuron]
+    [DecidableEq Memory]
+    (n : ℕ)
+    (ξ : Patterns Memory Neuron)
+    (μ : Memory)
+    (i : Neuron)
+    (hbinary : IsBinaryPattern ξ μ) :
+    flipEnergyGap (polyF n) ξ (patternState ξ μ) i =
+      ((Fintype.card Neuron : ℝ) ^ n -
+        ((Fintype.card Neuron : ℝ) - 2) ^ n) +
+        noiseTerm n ξ μ i := by
+  rw [flipEnergyGap_stored_memory]
+  unfold noiseTerm
+  rw [Finset.sum_sub_distrib]
+  rw [← self_signal_term n ξ μ i hbinary]
+  rw [← Finset.add_sum_erase _ _ (Finset.mem_univ μ)]
+  rw [← Finset.add_sum_erase _ _ (Finset.mem_univ μ)]
+  ring
+
 end LeanDAM

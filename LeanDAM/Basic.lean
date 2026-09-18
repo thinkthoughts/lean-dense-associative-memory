@@ -178,12 +178,12 @@ theorem energy_stepAt_le
       exact Function.update_eq_self i σ
     unfold stepAt
     split_ifs with h
-    · simpa [hσ_eq]
+    · simp [hσ_eq]
     · have hlt :
           energy F ξ (candidateNeg σ i) <
             energy F ξ (candidatePos σ i) :=
         lt_of_not_ge h
-      rw [hσ_eq] at hlt ⊢
+      rw [hσ_eq] at hlt
       exact le_of_lt hlt
   · have hσ_eq : candidateNeg σ i = σ := by
       unfold candidateNeg
@@ -191,9 +191,9 @@ theorem energy_stepAt_le
       exact Function.update_eq_self i σ
     unfold stepAt
     split_ifs with h
-    · rw [hσ_eq] at h ⊢
+    · rw [hσ_eq] at h
       exact h
-    · simpa [hσ_eq]
+    · simp [hσ_eq]
 
 /-- A single asynchronous update preserves the binary spin-state constraint. -/
 theorem stepAt_isSpinState

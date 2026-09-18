@@ -149,6 +149,10 @@ theorem overlap_self_of_binary
 Flipping one coordinate of a binary stored pattern changes its
 self-overlap from `N` to `N - 2`.
 -/
+/--
+Flipping one coordinate of a binary stored pattern changes its
+self-overlap from `N` to `N - 2`.
+-/
 theorem overlap_self_flip_of_binary
     {Neuron Memory : Type}
     [Fintype Neuron]
@@ -159,40 +163,30 @@ theorem overlap_self_flip_of_binary
     (hbinary : IsBinaryPattern ξ μ) :
     overlap ξ (flip (patternState ξ μ) i) μ =
       (Fintype.card Neuron : ℝ) - 2 := by
-  have hbinary' : ∀ j, ξ μ j = 1 ∨ ξ μ j = -1 := by
-    intro j
-    simpa [patternState] using hbinary j
-  have hsq : ∀ j, ξ μ j * ξ μ j = (1 : ℝ) := by
-    intro j
-    rcases hbinary' j with hpos | hneg
-    · rw [hpos]
+  have hbit : ξ μ i * ξ μ i = (1 : ℝ) := by
+    rcases hbinary i with hpos | hneg
+    · have hi : ξ μ i = 1 := by
+        simpa [patternState] using hpos
+      rw [hi]
       norm_num
-    · rw [hneg]
+    · have hi : ξ μ i = -1 := by
+        simpa [patternState] using hneg
+      rw [hi]
       norm_num
-  unfold overlap flip patternState
-  rw [← Finset.add_sum_erase _ _ (Finset.mem_univ i)]
-  have hi :
-      ξ μ i * Function.update (ξ μ) i (-ξ μ i) i =
-        (-1 : ℝ) := by
-    simp [Function.update, hsq i]
-  rw [hi]
-  have hrest :
-      ∑ j ∈ Finset.univ.erase i,
-          ξ μ j * Function.update (ξ μ) i (-ξ μ i) j =
-        ∑ j ∈ Finset.univ.erase i, (1 : ℝ) := by
-    apply Finset.sum_congr rfl
-    intro j hj
-    have hji : j ≠ i := by
-      simpa using hj
-    simp [Function.update, hji, hsq j]
-  rw [hrest]
-  simp only [Finset.sum_const, nsmul_eq_mul]
-  rw [Finset.card_erase_of_mem (Finset.mem_univ i)]
-  simp only [Finset.card_univ]
-  have hcard : 1 ≤ Fintype.card Neuron := by
-    exact Fintype.card_pos_iff.mpr ⟨i⟩
-  rw [Nat.cast_sub hcard]
-  linarith
+
+  have hflip :
+      overlap ξ (flip (patternState ξ μ) i) μ =
+        overlap ξ (patternState ξ μ) μ - 2 := by
+    unfold overlap flip patternState
+    rw [← Finset.add_sum_erase _ _ (Finset.mem_univ i)]
+    conv_rhs =>
+      lhs
+      rw [← Finset.add_sum_erase _ _ (Finset.mem_univ i)]
+    simp [Function.update, hbit]
+    ring
+
+  rw [hflip]
+  rw [overlap_self_of_binary ξ μ hbinary]
 
 /--
 For polynomial separation `F(x) = x^n`, the selected stored memory

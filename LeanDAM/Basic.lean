@@ -322,5 +322,32 @@ theorem updateGap_eq_energy_difference
   simp_rw [overlap_candidatePos, overlap_candidateNeg]
   rw [Finset.sum_sub_distrib]
   ring
+/-- Stored pattern `μ`, viewed as a network state. -/
+def patternState
+    {Neuron Memory : Type}
+    (ξ : Patterns Memory Neuron)
+    (μ : Memory) : State Neuron :=
+  ξ μ
+
+/-- Stored pattern `μ` is binary. -/
+def IsBinaryPattern
+    {Neuron Memory : Type}
+    (ξ : Patterns Memory Neuron)
+    (μ : Memory) : Prop :=
+  IsSpinState (patternState ξ μ)
+
+/--
+A stored pattern is stable under every asynchronous
+single-neuron energy update.
+-/
+def IsStablePattern
+    {Neuron Memory : Type}
+    [Fintype Neuron]
+    [Fintype Memory]
+    [DecidableEq Neuron]
+    (F : Separation)
+    (ξ : Patterns Memory Neuron)
+    (μ : Memory) : Prop :=
+  ∀ i, stepAt F ξ (patternState ξ μ) i = patternState ξ μ
 
 end LeanDAM

@@ -82,7 +82,9 @@ private lemma swap_memory_to_inner
     ∑ μ, ∑ i, ∑ j, f μ i j =
       ∑ i, ∑ j, ∑ μ, f μ i j := by
   rw [Finset.sum_comm]
-  simp_rw [Finset.sum_comm]
+  apply Finset.sum_congr rfl
+  intro i _
+  rw [Finset.sum_comm]
 
 /-- Factors the memory sum into `interaction`, pulling the two state terms out. -/
 private lemma factor_interaction

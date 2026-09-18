@@ -288,7 +288,7 @@ real-valued algebraic state
 
 The former remains the verified CP2–CP4 layer. The latter is introduced where required beginning at CP5.
 
-### Energy-normalization refinement
+### Quadratic-energy convention refinement
 
 The generalized DAM energy in the primary source is
 
@@ -316,16 +316,30 @@ where
 Tᵢⱼ = Σᵤ ξᵢᵘ ξⱼᵘ.
 ```
 
-The primary source separately displays the conventional standard associative-memory energy with normalization
+The primary source separately displays the conventional standard associative-memory energy as
 
 ```text
 E_standard
 = - 1/2 Σᵢ Σⱼ Tᵢⱼ σᵢ σⱼ.
 ```
 
-The paper states that its polynomial `n = 2` model reduces to the standard associative-memory model.
+RP2 therefore records two distinct convention boundaries.
 
-RP2 therefore refines the RP1 wording: CP4 proves the interaction-matrix expansion of the quadratic generalized energy. Literal identification with the separately displayed standard energy requires accounting for its normalization convention.
+First, the displayed standard energy carries a factor `1/2`, while the direct CP4 expansion of the generalized quadratic energy does not. This is a multiplicative normalization difference.
+
+Second, the CP4 expansion includes same-index terms `i = j`. For binary spin states,
+
+```text
+σᵢ² = 1,
+```
+
+so the diagonal contribution is state-independent. It therefore changes the energy by an additive constant rather than changing the ordering of binary configurations.
+
+These distinctions leave the qualitative CP5 energy-comparison result unchanged: positive rescaling and addition of a state-independent constant preserve energy ordering.
+
+They must nevertheless remain explicit for CP6, where exact energy differences, mean gaps, variances, and capacity coefficients depend on the precise Hamiltonian and update conventions.
+
+The paper states that its polynomial `n = 2` model reduces to the standard associative-memory model. CP4 should therefore be described as the interaction-matrix expansion of the quadratic generalized energy, with normalization and same-index conventions tracked separately from the conventional displayed form.
 
 ### Asynchronous energy-based dynamics
 

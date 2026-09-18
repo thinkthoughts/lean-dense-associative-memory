@@ -171,24 +171,29 @@ theorem energy_stepAt_le
     (i : Neuron)
     (hσ : IsSpinState σ) :
     energy F ξ (stepAt F ξ σ i) ≤ energy F ξ σ := by
-  unfold stepAt
-  rcases hσ i with h1 | h1
+  rcases hσ i with hpos | hneg
   · have hσ_eq : candidatePos σ i = σ := by
       unfold candidatePos
-      rw [← h1]
+      rw [← hpos]
       exact Function.update_eq_self i σ
+    unfold stepAt
     split_ifs with h
-    · rw [hσ_eq]
-    · rw [← hσ_eq] at h ⊢
-      linarith [h]
+    · simpa [hσ_eq]
+    · have hlt :
+          energy F ξ (candidateNeg σ i) <
+            energy F ξ (candidatePos σ i) :=
+        lt_of_not_ge h
+      rw [hσ_eq] at hlt ⊢
+      exact le_of_lt hlt
   · have hσ_eq : candidateNeg σ i = σ := by
       unfold candidateNeg
-      rw [← h1]
+      rw [← hneg]
       exact Function.update_eq_self i σ
+    unfold stepAt
     split_ifs with h
     · rw [hσ_eq] at h ⊢
-      linarith [h]
-    · rw [hσ_eq]
+      exact h
+    · simpa [hσ_eq]
 
 /-- A single asynchronous update preserves the binary spin-state constraint. -/
 theorem stepAt_isSpinState
@@ -202,21 +207,19 @@ theorem stepAt_isSpinState
     (i : Neuron)
     (hσ : IsSpinState σ) :
     IsSpinState (stepAt F ξ σ i) := by
-  unfold stepAt IsSpinState
+  unfold stepAt
   split_ifs
   · intro j
-    unfold candidatePos
     by_cases hj : j = i
-    · subst hj
-      simp
-    · simp [Function.update_noteq hj]
-      exact hσ j
+    · subst j
+      left
+      simp [candidatePos]
+    · simpa [candidatePos, Function.update, hj] using hσ j
   · intro j
-    unfold candidateNeg
     by_cases hj : j = i
-    · subst hj
-      simp
-    · simp [Function.update_noteq hj]
-      exact hσ j
+    · subst j
+      right
+      simp [candidateNeg]
+    · simpa [candidateNeg, Function.update, hj] using hσ j
 
 end LeanDAM

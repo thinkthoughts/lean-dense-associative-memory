@@ -643,6 +643,145 @@ verified deterministic gap criterion
 
 No probabilistic capacity theorem is inferred from CP2–CP6a alone.
 
+## CP6c — Random-pattern capacity model
+
+### Reading point
+
+CP6b.3 established the exact deterministic decomposition
+
+\[
+\Delta E_i^\mu
+=
+\left[N^n-(N-2)^n\right]
++
+\operatorname{noiseTerm}.
+\]
+
+No probability assumptions are required for that identity.
+
+### Random-pattern specification
+
+For the capacity analysis, fix:
+
+- a selected stored memory \(\mu\),
+- a neuron \(i\),
+- polynomial separation \(F(x)=x^n\).
+
+Treat the stored pattern coordinates as independent equiprobable binary
+random variables:
+
+\[
+\Pr(\xi_j^\nu=+1)
+=
+\Pr(\xi_j^\nu=-1)
+=
+\frac12.
+\]
+
+The network state is initialized exactly at the selected stored memory
+\(\xi^\mu\).
+
+### Stability event
+
+The exact one-flip energy condition is
+
+\[
+\Delta E_i^\mu \ge 0.
+\]
+
+This local energy-stability condition is distinct from deterministic
+`stepAt` fixed-point stability because `stepAt` resolves ties toward
+`+1`.
+
+### Exact signal
+
+The selected-memory contribution is exactly
+
+\[
+S_N(n)=N^n-(N-2)^n.
+\]
+
+### Asymptotic signal
+
+For large \(N\),
+
+\[
+S_N(n)
+\sim
+2nN^{n-1}.
+\]
+
+This is an asymptotic approximation, not an exact identity.
+
+### Noise variance
+
+Under the independent random-pattern model, the paper gives the
+large-\(N\) variance
+
+\[
+\Sigma^2
+=
+\Omega_n(K-1)N^{n-1},
+\qquad
+\Omega_n
+=
+4n^2(2n-3)!!.
+\]
+
+This belongs to the probabilistic/asymptotic layer and is not implied
+by CP6b.3 alone.
+
+### Gaussian approximation
+
+For large \(N\) and \(K\), the paper approximates the noise by a
+Gaussian distribution and uses the corresponding tail probability
+to estimate a one-neuron retrieval error.
+
+The Gaussian approximation must remain explicitly marked as an
+approximation rather than a theorem derived from the deterministic
+energy identity.
+
+### Capacity scaling
+
+For a fixed single-neuron error threshold, the paper obtains
+
+\[
+K_{\max}
+=
+\alpha_n N^{n-1}.
+\]
+
+The coefficient \(\alpha_n\) depends on the chosen error threshold.
+
+The stronger no-error criterion uses a different scaling:
+
+\[
+K_{\max}^{\mathrm{no\ errors}}
+\approx
+\frac{1}{2(2n-3)!!}
+\frac{N^{n-1}}{\ln N}.
+\]
+
+### Specification boundary
+
+Exact deterministic identity
+\[
+\neq
+\]
+random-pattern assumption
+\[
+\neq
+\]
+large-\(N\) variance formula
+\[
+\neq
+\]
+Gaussian approximation
+\[
+\neq
+\]
+capacity scaling.
+
 ## CP7 — Energy Transformer Boundary
 
 Use the cited Energy Transformer primary source before formalizing attention-energy or transformer correspondence claims.

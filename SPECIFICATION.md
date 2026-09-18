@@ -527,18 +527,121 @@ Fixed-point stability and capacity remain separate specifications and are not in
 
 CP6 begins only after CP5 establishes the source-specific binary dynamics.
 
-The next specification must distinguish
+The specification distinguishes
 
 ```text
 deterministic one-step energy monotonicity
-≠ stability of a stored pattern
+≠ deterministic stability of a stored pattern
+≠ probability that random stored patterns satisfy a stability criterion
 ≠ probabilistic storage capacity
 ≠ asymptotic capacity scaling.
 ```
 
-Any formalization of the paper's capacity results must make explicit the random-pattern model, equiprobable binary components, stability criterion, asymptotic regime, Gaussian approximation, and error threshold.
+### CP6a — Deterministic stored-pattern stability
 
-No capacity theorem is inferred from CP2–CP5 alone.
+A stored pattern `μ` is viewed as the network state
+
+```text
+patternState ξ μ = ξ μ.
+```
+
+The source-specific binary restriction is recorded by
+
+```text
+IsBinaryPattern ξ μ.
+```
+
+Lean defines deterministic stability under the verified asynchronous update by
+
+```text
+IsStablePattern F ξ μ
+:= ∀ i, stepAt F ξ (patternState ξ μ) i = patternState ξ μ.
+```
+
+Thus stability is a fixed-point property of every single-neuron update, rather than a consequence inferred merely from non-increase of energy.
+
+Because `stepAt` resolves equal candidate energies toward `+1`, the exact candidate-energy criterion is asymmetric. For a binary stored pattern, Lean verifies stability where every neuron satisfies
+
+```text
+patternState ξ μ i = +1
+→ E(candidatePos) ≤ E(candidateNeg)
+
+patternState ξ μ i = -1
+→ E(candidateNeg) < E(candidatePos).
+```
+
+The strict inequality in the second branch is a consequence of the explicit tie convention, rather than an additional physical assumption.
+
+Using the CP5 identity
+
+```text
+updateGap = E(candidateNeg) - E(candidatePos),
+```
+
+Lean also verifies the equivalent sufficient gap criterion
+
+```text
+patternState ξ μ i = +1
+→ 0 ≤ updateGap
+
+patternState ξ μ i = -1
+→ updateGap < 0.
+```
+
+Therefore the verified deterministic chain is
+
+```text
+binary stored pattern
+→ Eq. (4) update-gap sign at each neuron
+→ local candidate-energy preference
+→ fixed stored pattern under each asynchronous update.
+```
+
+- [x] Represent a stored pattern as a network state.
+- [x] Specify the binary stored-pattern condition.
+- [x] Define stability under every asynchronous single-neuron update.
+- [x] Prove a candidate-energy criterion sufficient for stored-pattern stability.
+- [x] Translate that criterion into the Eq. (4) `updateGap` quantity.
+
+CP6a is complete.
+
+### CP6b — Probabilistic stability and capacity target
+
+CP6b changes mathematical regimes. The deterministic CP6a theorem specifies what must hold at every neuron of a particular stored pattern. It does not specify how often that condition holds for randomly generated memories.
+
+The primary source's capacity analysis adds a random-pattern model in which stored memories are binary and each component takes `−1` or `+1` with equal probability. The system is initialized at a stored memory and stability is examined through the energy change associated with a one-neuron flip.
+
+Before a capacity theorem is admissible, the formalization must specify separately:
+
+- the probability space for stored binary patterns;
+- equiprobable and required independence assumptions for pattern components;
+- the selected stored pattern and neuron used in the local stability calculation;
+- the random energy gap or equivalent stability quantity;
+- its mean and fluctuation terms under the source's assumptions;
+- the large-`N`, large-`K` regime used for the approximation;
+- the Gaussian approximation used in the error estimate;
+- the chosen single-neuron error threshold;
+- the stronger perfect-recovery criterion where applicable.
+
+Only after those specifications may the source's capacity statements such as
+
+```text
+Kmax = αₙ Nⁿ⁻¹
+```
+
+or its perfect-recovery asymptotic expression become formalization targets.
+
+The CP6 boundary is therefore
+
+```text
+verified deterministic gap criterion
+→ specified random-pattern model
+→ probabilistic stability calculation
+→ stated approximation regime
+→ capacity scaling.
+```
+
+No probabilistic capacity theorem is inferred from CP2–CP6a alone.
 
 ## CP7 — Energy Transformer Boundary
 

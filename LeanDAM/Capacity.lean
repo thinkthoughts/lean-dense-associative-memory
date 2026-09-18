@@ -109,6 +109,7 @@ theorem flipEnergyGap_eq_neg_updateGap_of_neg
         candidatePos (patternState ξ μ) i := by
     unfold candidatePos
     rw [h]
+    norm_num
   have hcurrent :
       candidateNeg (patternState ξ μ) i =
         patternState ξ μ := by

@@ -278,4 +278,23 @@ theorem flipEnergyGap_signal_noise_decomposition
   rw [← Finset.add_sum_erase _ _ (Finset.mem_univ μ)]
   ring
 
+/--
+All stored patterns are binary spin states.
+-/
+def AreBinaryPatterns
+    {Neuron Memory : Type}
+    (ξ : Patterns Memory Neuron) : Prop :=
+  ∀ μ, IsBinaryPattern ξ μ
+
+/--
+A globally binary pattern collection gives a binary selected memory.
+-/
+theorem selected_memory_binary
+    {Neuron Memory : Type}
+    (ξ : Patterns Memory Neuron)
+    (hbinary : AreBinaryPatterns ξ)
+    (μ : Memory) :
+    IsBinaryPattern ξ μ :=
+  hbinary μ
+
 end LeanDAM

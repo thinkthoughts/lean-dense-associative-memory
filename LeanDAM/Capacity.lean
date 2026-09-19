@@ -533,5 +533,28 @@ theorem coordinatePMF_false
           symm
           exact ENNReal.inv_two_add_inv_two
 
+/--
+A stored pattern coordinate takes the values `+1` and `-1`
+with equal probability one half under the uniform sample law.
+-/
+theorem patternCoordinate_pm_half
+    (Memory Neuron : Type)
+    [Fintype Memory]
+    [Fintype Neuron]
+    (μ : Memory)
+    (i : Neuron) :
+    PMF.map
+        (fun ω : Omega Memory Neuron => patternsOf ω μ i)
+        (uniformSamples Memory Neuron) 1
+        = (2 : ENNReal)⁻¹ ∧
+    PMF.map
+        (fun ω : Omega Memory Neuron => patternsOf ω μ i)
+        (uniformSamples Memory Neuron) (-1)
+        = (2 : ENNReal)⁻¹ := by
+  constructor
+  · simpa [patternsOf, toPM] using
+      coordinatePMF_true Memory Neuron μ i
+  · simpa [patternsOf, toPM] using
+      coordinatePMF_false Memory Neuron μ i
 
 end LeanDAM

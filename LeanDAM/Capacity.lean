@@ -475,8 +475,6 @@ theorem coordinatePMF_true
           unfold coordinatePMF
           rw [PMF.toOuterMeasure_map_apply]
           congr 1
-          ext ω
-          simp
 
     _ =
         (Fintype.card

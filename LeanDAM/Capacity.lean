@@ -465,9 +465,9 @@ theorem coordinatePMF_true
     coordinatePMF Memory Neuron μ i true
         =
         (coordinatePMF Memory Neuron μ i).toOuterMeasure {true} := by
-          symm
-          exact PMF.toOuterMeasure_apply_singleton
-            (coordinatePMF Memory Neuron μ i) true
+          exact
+            (PMF.toOuterMeasure_apply_singleton
+              (coordinatePMF Memory Neuron μ i) true).symm
 
     _ =
         (uniformSamples Memory Neuron).toOuterMeasure
@@ -482,17 +482,22 @@ theorem coordinatePMF_true
         (Fintype.card FiberTrue : ENNReal) /
           Fintype.card (Omega Memory Neuron) := by
           unfold uniformSamples
-          simpa [FiberTrue] using
-            (PMF.toOuterMeasure_uniformOfFintype_apply
-              (α := Omega Memory Neuron)
-              (s := {ω : Omega Memory Neuron | ω μ i = true}))
+
+          have hsubtype :
+              Fintype.card FiberTrue =
+                (Finset.univ.filter
+                  (fun ω : Omega Memory Neuron => ω μ i = true)).card := by
+            apply Fintype.subtype_card
+            intro ω
+            simp [FiberTrue]
+
+          rw [PMF.toOuterMeasure_uniformOfFintype_apply]
+          rw [hsubtype]
 
     _ =
         (1 : ENNReal) / 2 := by
           rw [hcardENN]
-          simpa using
-            (ENNReal.mul_div_mul_left
-              (1 : ENNReal) 2 hA0 hAtop)
+          field_simp
 
     _ = (2 : ENNReal)⁻¹ := by
           simp [div_eq_mul_inv]

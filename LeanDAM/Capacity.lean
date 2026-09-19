@@ -564,11 +564,15 @@ theorem patternCoordinate_pm_half
   · rw [hmap]
     rw [PMF.map_apply]
     rw [tsum_bool]
-    simp [toPM, coordinatePMF_true Memory Neuron μ i]
+    have hne : (1 : ℝ) ≠ -1 := by
+      norm_num
+    simp [toPM, hne, coordinatePMF_true Memory Neuron μ i]
 
   · rw [hmap]
     rw [PMF.map_apply]
     rw [tsum_bool]
-    simp [toPM, coordinatePMF_false Memory Neuron μ i]
+    have hne : (-1 : ℝ) ≠ 1 := by
+      norm_num
+    simp [toPM, hne, coordinatePMF_false Memory Neuron μ i]
 
 end LeanDAM

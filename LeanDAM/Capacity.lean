@@ -551,10 +551,24 @@ theorem patternCoordinate_pm_half
         (fun ω : Omega Memory Neuron => patternsOf ω μ i)
         (uniformSamples Memory Neuron) (-1)
         = (2 : ENNReal)⁻¹ := by
+  have hmap :
+      PMF.map
+          (fun ω : Omega Memory Neuron => patternsOf ω μ i)
+          (uniformSamples Memory Neuron) =
+        PMF.map toPM (coordinatePMF Memory Neuron μ i) := by
+    unfold coordinatePMF
+    rw [PMF.map_comp]
+    rfl
+
   constructor
-  · simpa [patternsOf, toPM] using
-      coordinatePMF_true Memory Neuron μ i
-  · simpa [patternsOf, toPM] using
-      coordinatePMF_false Memory Neuron μ i
+  · rw [hmap]
+    rw [PMF.map_apply]
+    rw [tsum_bool]
+    simp [toPM, coordinatePMF_true Memory Neuron μ i]
+
+  · rw [hmap]
+    rw [PMF.map_apply]
+    rw [tsum_bool]
+    simp [toPM, coordinatePMF_false Memory Neuron μ i]
 
 end LeanDAM

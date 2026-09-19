@@ -410,10 +410,20 @@ theorem coordinate_true_fiber_card
 
   have hsplit :
       Fintype.card (Omega Memory Neuron) =
-        Fintype.card {ω : Omega Memory Neuron // ω μ i = true} +
-        Fintype.card {ω : Omega Memory Neuron // ω μ i = false} := by
-    classical
-    let f : Omega Memory Neuron → Bool := fun ω => ω μ i
+        Fintype.card
+            {ω : Omega Memory Neuron //
+              ω μ₁ i₁ = false ∧ ω μ₂ i₂ = false} +
+        (Fintype.card
+            {ω : Omega Memory Neuron //
+              ω μ₁ i₁ = true ∧ ω μ₂ i₂ = false} +
+        (Fintype.card
+            {ω : Omega Memory Neuron //
+              ω μ₁ i₁ = false ∧ ω μ₂ i₂ = true} +
+        Fintype.card
+            {ω : Omega Memory Neuron //
+              ω μ₁ i₁ = true ∧ ω μ₂ i₂ = true})) := by
+    let f : Omega Memory Neuron → Bool × Bool :=
+      fun ω => (ω μ₁ i₁, ω μ₂ i₂)
     simpa [f] using
       (Fintype.card_congr
         (Equiv.sigmaFiberEquiv f)).symm

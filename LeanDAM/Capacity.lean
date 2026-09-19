@@ -526,10 +526,9 @@ theorem coordinatePMF_false
   apply (ENNReal.add_left_inj (by simp : (2 : ENNReal)⁻¹ ≠ ⊤)).mp
 
   calc
-    (2 : ENNReal)⁻¹ +
-        coordinatePMF Memory Neuron μ i false
+    coordinatePMF Memory Neuron μ i false + (2 : ENNReal)⁻¹
         = 1 := by
-          simpa [p] using hsum
+          simpa [p, add_comm] using hsum
     _ = (2 : ENNReal)⁻¹ + (2 : ENNReal)⁻¹ := by
           symm
           exact ENNReal.inv_two_add_inv_two

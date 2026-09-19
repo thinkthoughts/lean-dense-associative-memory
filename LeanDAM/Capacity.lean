@@ -303,6 +303,17 @@ A pattern-collection sample: one Boolean outcome for each
 abbrev Omega (Memory Neuron : Type) :=
   Memory → Neuron → Bool
 
+/--
+The finite Boolean sample space inherits a finite enumeration from
+the finite memory and neuron index types.
+-/
+noncomputable instance omegaFintype
+    (Memory Neuron : Type)
+    [Fintype Memory]
+    [Fintype Neuron] :
+    Fintype (Omega Memory Neuron) :=
+  Fintype.ofFinite _
+
 /-- Map a Boolean sample coordinate to a spin value in `{−1, +1}`. -/
 def toPM (b : Bool) : ℝ :=
   if b then 1 else -1
@@ -332,7 +343,6 @@ noncomputable def uniformSamples
     [Fintype Memory]
     [Fintype Neuron] :
     PMF (Omega Memory Neuron) := by
-  letI : Fintype (Omega Memory Neuron) := Fintype.ofFinite _
   letI : Nonempty (Omega Memory Neuron) :=
     ⟨fun _ _ => false⟩
   exact PMF.uniformOfFintype (Omega Memory Neuron)
@@ -406,30 +416,9 @@ theorem coordinate_true_fiber_card
     let f : Omega Memory Neuron → Bool := fun ω => ω μ i
     simpa [f] using
       (Fintype.card_congr
-        (Equiv.sigmaFiberEquiv f))
+        (Equiv.sigmaFiberEquiv f)).symm
 
   omega
 
-/--
-A fixed Boolean coordinate is `true` with probability one half
-under the uniform sample distribution.
--/
-theorem coordinatePMF_true
-    (Memory Neuron : Type)
-    [Fintype Memory]
-    [Fintype Neuron]
-    (μ : Memory)
-    (i : Neuron) :
-    coordinatePMF Memory Neuron μ i true = (2 : ENNReal)⁻¹ := by
-  classical
-  unfold coordinatePMF uniformSamples
-  simp only [PMF.map_apply, PMF.uniformOfFintype_apply]
-  rw [tsum_fintype]
-  have hcard := coordinate_true_fiber_card Memory Neuron μ i
-  -- The remaining finite sum is the size of the `true` fiber times
-  -- the common uniform mass.
-  simp only [Bool.true_eq]
-  rw [← Finset.sum_filter]
-  simp
 
 end LeanDAM

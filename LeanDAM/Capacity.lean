@@ -474,15 +474,23 @@ theorem coordinatePMF_true
           {ω : Omega Memory Neuron | ω μ i = true} := by
           unfold coordinatePMF
           rw [PMF.toOuterMeasure_map_apply]
+          congr 1
+          ext ω
+          simp
+
+    _ =
+        (Fintype.card
+            {ω : Omega Memory Neuron // ω μ i = true} : ENNReal) /
+          Fintype.card (Omega Memory Neuron) := by
+          unfold uniformSamples
+          exact
+            PMF.toOuterMeasure_uniformOfFintype_apply
+              (s := {ω : Omega Memory Neuron | ω μ i = true})
 
     _ =
         (Fintype.card FiberTrue : ENNReal) /
           Fintype.card (Omega Memory Neuron) := by
-          unfold uniformSamples
-          simpa [FiberTrue] using
-            (PMF.toOuterMeasure_uniformOfFintype_apply
-              (α := Omega Memory Neuron)
-              (s := {ω : Omega Memory Neuron | ω μ i = true}))
+          rfl
 
     _ =
         (Fintype.card FiberTrue : ENNReal) /

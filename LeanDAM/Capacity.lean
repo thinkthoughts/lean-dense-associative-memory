@@ -502,5 +502,38 @@ theorem coordinatePMF_true
             (Or.inl hAtop)]
           exact ENNReal.mul_inv_cancel_left hA0 hAtop
 
+/--
+A fixed Boolean coordinate is `false` with probability one half
+under the uniform sample distribution.
+-/
+theorem coordinatePMF_false
+    (Memory Neuron : Type)
+    [Fintype Memory]
+    [Fintype Neuron]
+    (μ : Memory)
+    (i : Neuron) :
+    coordinatePMF Memory Neuron μ i false = (2 : ENNReal)⁻¹ := by
+  let p := coordinatePMF Memory Neuron μ i
+
+  have hsum : p false + p true = 1 := by
+    simpa [p, tsum_bool] using PMF.tsum_coe p
+
+  have htrue : p true = (2 : ENNReal)⁻¹ := by
+    simpa [p] using coordinatePMF_true Memory Neuron μ i
+
+  have hhalf :
+      (2 : ENNReal)⁻¹ + (2 : ENNReal)⁻¹ = 1 := by
+    norm_num
+
+  rw [htrue] at hsum
+
+  apply (ENNReal.add_left_inj (by simp : (2 : ENNReal)⁻¹ ≠ ⊤)).mp
+  calc
+    coordinatePMF Memory Neuron μ i false + (2 : ENNReal)⁻¹
+        = 1 := by
+          simpa [p] using hsum
+    _ = (2 : ENNReal)⁻¹ + (2 : ENNReal)⁻¹ := by
+          symm
+          exact hhalf
 
 end LeanDAM

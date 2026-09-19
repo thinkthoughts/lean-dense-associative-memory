@@ -420,5 +420,81 @@ theorem coordinate_true_fiber_card
 
   omega
 
+/--
+A fixed Boolean coordinate is `true` with probability one half
+under the uniform sample distribution.
+-/
+theorem coordinatePMF_true
+    (Memory Neuron : Type)
+    [Fintype Memory]
+    [Fintype Neuron]
+    (μ : Memory)
+    (i : Neuron) :
+    coordinatePMF Memory Neuron μ i true = (2 : ENNReal)⁻¹ := by
+  classical
+
+  let FiberTrue :=
+    {ω : Omega Memory Neuron // ω μ i = true}
+
+  have hcard :
+      Fintype.card (Omega Memory Neuron) =
+        Fintype.card FiberTrue * 2 := by
+    simpa [FiberTrue] using
+      (coordinate_true_fiber_card Memory Neuron μ i).symm
+
+  have hfiber : Nonempty FiberTrue := by
+    exact ⟨⟨fun _ _ => true, rfl⟩⟩
+
+  have hpos : 0 < Fintype.card FiberTrue := by
+    exact Fintype.card_pos_iff.mpr hfiber
+
+  have hA0 :
+      ((Fintype.card FiberTrue : ℕ) : ENNReal) ≠ 0 := by
+    exact_mod_cast Nat.ne_of_gt hpos
+
+  have hAtop :
+      ((Fintype.card FiberTrue : ℕ) : ENNReal) ≠ ⊤ := by
+    simp
+
+  have hcardENN :
+      (Fintype.card (Omega Memory Neuron) : ENNReal) =
+        (Fintype.card FiberTrue : ENNReal) * 2 := by
+    exact_mod_cast hcard
+
+  calc
+    coordinatePMF Memory Neuron μ i true
+        =
+        (coordinatePMF Memory Neuron μ i).toOuterMeasure {true} := by
+          symm
+          exact PMF.toOuterMeasure_apply_singleton
+            (coordinatePMF Memory Neuron μ i) true
+
+    _ =
+        (uniformSamples Memory Neuron).toOuterMeasure
+          {ω : Omega Memory Neuron | ω μ i = true} := by
+          unfold coordinatePMF
+          rw [PMF.toOuterMeasure_map_apply]
+          congr
+          ext ω
+          simp
+
+    _ =
+        (Fintype.card FiberTrue : ENNReal) /
+          Fintype.card (Omega Memory Neuron) := by
+          unfold uniformSamples
+          simpa [FiberTrue] using
+            (PMF.toOuterMeasure_uniformOfFintype_apply
+              (α := Omega Memory Neuron)
+              (s := {ω : Omega Memory Neuron | ω μ i = true}))
+
+    _ =
+        (1 : ENNReal) / 2 := by
+          rw [hcardENN]
+          simpa using
+            (ENNReal.mul_div_mul_left
+              (1 : ENNReal) 2 hA0 hAtop)
+
+    _ = (2 : ENNReal)⁻¹ := by
+          simp [div_eq_mul_inv]
 
 end LeanDAM

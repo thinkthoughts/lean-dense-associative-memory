@@ -307,7 +307,7 @@
       <div class="meta">
         <span>Report route: <strong>/dam</strong></span>
         <span>Lean build: <strong>8940 jobs · successful</strong></span>
-        <span>Scope: <strong>exact finite layer before asymptotic capacity analysis</strong></span>
+        <span>Scope: <strong>exact DAM statements preceding asymptotic capacity analysis</strong></span>
       </div>
 
       <figure class="hero">
@@ -320,7 +320,7 @@
   <main class="wrap">
     <section>
       <h2>Reading point</h2>
-      <p class="lead">This report formalizes a finite, exact layer of the Dense Associative Memory model of Krotov and Hopfield before the variance, Gaussian, and asymptotic capacity arguments begin.</p>
+      <p class="lead">This report formalizes exact Dense Associative Memory statements from the Krotov–Hopfield model before the variance, Gaussian, and asymptotic capacity arguments begin.</p>
 
       <div class="callout">
         <div class="math">
@@ -338,7 +338,7 @@
         <p>The formalization separates three levels that should not be conflated:</p>
         <div class="math">
           \[
-          \text{exact finite identities}
+          \text{exact identities}
           \;\neq\;
           \text{probabilistic structure}
           \;\neq\;
@@ -431,7 +431,7 @@
 
     <section>
       <h2>5. Explicit random-pattern interface</h2>
-      <p>The random-pattern layer is specified by the finite Boolean sample space</p>
+      <p>For finite memory and neuron index types, the random-pattern layer is specified by the Boolean sample space</p>
       <div class="math">
         \[
         \Omega
@@ -477,7 +477,7 @@
       <div class="boundary">
         <div class="now">
           <h3>Formalized in this report</h3>
-          <p>Exact one-flip identities, selected-memory geometry, exact signal term, exact signal/noise decomposition, explicit finite uniform binary ensemble, and equiprobable \( \pm1 \) stored coordinates.</p>
+          <p>Exact one-flip identities, selected-memory geometry, exact signal term, exact signal/noise decomposition, explicit uniform binary ensemble, and equiprobable \( \pm1 \) stored coordinates.</p>
         </div>
         <div class="next">
           <h3>Subsequent checkpoints</h3>
@@ -511,7 +511,7 @@
 
     <section>
       <h2>Boundary of the present result</h2>
-      <p>The present kernel-checked boundary covers exact finite identities through the marginal equiprobability of each spin coordinate. Distinct-coordinate independence, noise variance, Gaussian approximation, and capacity scaling remain subsequent checkpoints.</p>
+      <p>The present kernel-checked boundary covers exact identities through the marginal equiprobability of each spin coordinate. Distinct-coordinate independence, noise variance, Gaussian approximation, and capacity scaling remain subsequent checkpoints.</p>
       <div class="math">
         \[
         \text{distinct-coordinate independence}
@@ -528,13 +528,13 @@
 
     <section>
       <h2>How to use this repo</h2>
-      <p class="lead">Use the repository as a checked map from the DAM equations in the source paper to the exact finite statements currently proved in Lean.</p>
+      <p class="lead">Use the repository as a checked map from the DAM equations in the source paper to the exact kernel-checked statements currently proved in Lean.</p>
 
       <div class="howto">
         <div class="item">
           <div class="n">01 · Read</div>
           <strong>Start with the report boundary</strong>
-          <span>Use this page to distinguish exact finite identities from later probabilistic and asymptotic checkpoints.</span>
+          <span>Use this page to distinguish exact identities from later probabilistic and asymptotic checkpoints.</span>
         </div>
         <div class="item">
           <div class="n">02 · Inspect</div>

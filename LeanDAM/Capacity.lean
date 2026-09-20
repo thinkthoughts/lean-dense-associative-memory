@@ -1,578 +1,592 @@
-import LeanDAM.Basic
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark light" />
+  <title>Formalizing Dense Associative Memory in Lean</title>
+  <meta name="description" content="A kernel-checked Lean formalization of the exact finite layer of Dense Associative Memory: one-flip energy, exact signal/noise decomposition, and equiprobable ±1 pattern coordinates." />
+  <meta property="og:title" content="Formalizing Dense Associative Memory in Lean" />
+  <meta property="og:description" content="Exact one-flip energy, signal/noise decomposition, and equiprobable ±1 pattern coordinates." />
+  <meta property="og:image" content="DAM.png" />
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #11182a;
+      --panel-2: #161f35;
+      --text: #eef3ff;
+      --muted: #aebbd6;
+      --line: #2a3858;
+      --accent: #79a8ff;
+      --accent-2: #f3bd62;
+      --good: #8ad6a0;
+      --max: 980px;
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(70, 112, 190, 0.14), transparent 32rem),
+        var(--bg);
+      color: var(--text);
+      font: 17px/1.65 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    a:hover { color: #a8c5ff; }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.9em;
+      color: #d8e4ff;
+    }
+    .wrap { width: min(calc(100% - 34px), var(--max)); margin: 0 auto; }
+    header {
+      padding: 42px 0 24px;
+      border-bottom: 1px solid var(--line);
+    }
+    .eyebrow {
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: .78rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    h1, h2, h3 {
+      font-family: Georgia, "Times New Roman", serif;
+      line-height: 1.15;
+      margin-top: 0;
+    }
+    h1 {
+      font-size: clamp(2.25rem, 5vw, 4rem);
+      margin-bottom: 14px;
+      max-width: 880px;
+    }
+    .dek {
+      color: var(--muted);
+      font-size: clamp(1.06rem, 2vw, 1.3rem);
+      max-width: 820px;
+      margin: 0;
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      margin-top: 22px;
+      color: var(--muted);
+      font-size: .92rem;
+    }
+    .hero {
+      margin: 30px 0 14px;
+      background: #fff;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--line);
+    }
+    .hero img { display: block; width: 100%; height: auto; }
+    .caption {
+      color: var(--muted);
+      font-size: .88rem;
+      margin-top: 9px;
+    }
+    main { padding: 34px 0 70px; }
+    section {
+      padding: 30px 0;
+      border-top: 1px solid var(--line);
+    }
+    section:first-child { border-top: 0; padding-top: 10px; }
+    h2 { font-size: 1.8rem; margin-bottom: 16px; }
+    h3 { font-size: 1.25rem; margin-bottom: 10px; }
+    p { margin: 0 0 15px; }
+    .lead {
+      font-size: 1.17rem;
+      color: #f5f7ff;
+    }
+    .callout {
+      background: linear-gradient(135deg, rgba(121,168,255,.10), rgba(243,189,98,.06));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      margin: 22px 0;
+    }
+    .math {
+      overflow-x: auto;
+      padding: 8px 0;
+      text-align: center;
+      font-size: 1.08rem;
+    }
+    .chain {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(120px, 1fr));
+      gap: 8px;
+      margin: 22px 0 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+    .step {
+      min-width: 130px;
+      padding: 14px 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel);
+      text-align: center;
+      font-size: .88rem;
+    }
+    .step strong { display: block; color: var(--text); margin-bottom: 5px; }
+    .step small { color: var(--muted); }
+    .boundary {
+      display: grid;
+      grid-template-columns: 1.35fr .65fr;
+      gap: 16px;
+      margin-top: 18px;
+    }
+    .boundary > div {
+      border-radius: var(--radius);
+      padding: 20px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+    }
+    .now { box-shadow: inset 4px 0 0 var(--good); }
+    .next { box-shadow: inset 4px 0 0 var(--accent-2); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      font-size: .94rem;
+    }
+    th, td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      color: #dce7ff;
+      font-weight: 700;
+      background: rgba(255,255,255,.025);
+    }
+    td:first-child { width: 42%; }
+    .sourcebox {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 16px;
+    }
+    .sourcebox a {
+      display: block;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+      text-decoration: none;
+    }
+    .sourcebox strong { display: block; color: var(--text); margin-bottom: 3px; }
+    .sourcebox span { color: var(--muted); font-size: .9rem; }
+    footer {
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      padding: 24px 0 40px;
+      font-size: .88rem;
+    }
 
-namespace LeanDAM
+    .site-header {
+      border-bottom: 1px solid var(--line);
+      background: rgba(11,16,32,.88);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .site-header .inner,
+    .site-footer .footer-inner {
+      width: min(calc(100% - 34px), var(--max));
+      margin: 0 auto;
+    }
+    .site-header .inner {
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .brand {
+      font-weight: 750;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: .01em;
+    }
+    .site-nav {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: .9rem;
+    }
+    .site-nav a { text-decoration: none; color: var(--muted); }
+    .site-nav a:hover { color: var(--text); }
+    .howto {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .howto .item {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+    }
+    .howto .n {
+      color: var(--accent);
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .howto strong { display: block; margin-bottom: 5px; }
+    .repo-path {
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 16px;
+      overflow-x: auto;
+      margin: 14px 0;
+    }
+    .site-footer {
+      border-top: 1px solid var(--line);
+      padding: 30px 0 38px;
+      color: var(--muted);
+      font-size: .88rem;
+    }
+    .footer-statement {
+      color: var(--text);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.04rem;
+      margin-bottom: 12px;
+    }
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      margin-bottom: 12px;
+    }
+    .footer-links a { text-decoration: none; color: var(--muted); }
+    .footer-links a:hover { color: var(--text); }
+    .footer-copyright { font-size: .82rem; color: #8e9ab3; }
 
-/-- Polynomial separation function `F(x) = x^n`. -/
-def polyF (n : ℕ) : Separation :=
-  fun x => x ^ n
+    @media (max-width: 760px) {
+      .boundary, .sourcebox, .howto { grid-template-columns: 1fr; }
+      body { font-size: 16px; }
+      header { padding-top: 28px; }
+    }
+  </style>
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+  <div class="site-header">
+    <div class="inner">
+      <a class="brand" href="/">labreports.app</a>
+      <nav class="site-nav" aria-label="Site">
+        <a href="/about/">About</a>
+        <a href="/feed/">Feed</a>
+      </nav>
+    </div>
+  </div>
+  <header>
+    <div class="wrap">
+      <div class="eyebrow">Lab report · Dense Associative Memory</div>
+      <h1>Formalizing Dense Associative Memory in Lean</h1>
+      <p class="dek">Exact one-flip energy, signal/noise decomposition, and equiprobable \( \pm 1 \) pattern coordinates.</p>
+      <div class="meta">
+        <span>Report route: <strong>/dam</strong></span>
+        <span>Lean build: <strong>8940 jobs · successful</strong></span>
+        <span>Scope: <strong>exact finite layer before asymptotic capacity analysis</strong></span>
+      </div>
 
-/-- State obtained by negating coordinate `i`. -/
-def flip
-    {Neuron : Type}
-    [DecidableEq Neuron]
-    (σ : State Neuron)
-    (i : Neuron) : State Neuron :=
-  Function.update σ i (-σ i)
-/--
-Energy change produced by flipping neuron `i`.
+      <figure class="hero">
+        <img src="DAM.png" alt="Dense Associative Memory network illustration" />
+      </figure>
+      <p class="caption">Header illustration. Mathematical claims are stated and scoped in the report below.</p>
+    </div>
+  </header>
 
-At a stored memory and for polynomial separation, this is the
-deterministic energy difference used in the paper's stability analysis.
--/
-def flipEnergyGap
-    {Neuron Memory : Type}
-    [Fintype Neuron]
-    [Fintype Memory]
-    [DecidableEq Neuron]
-    (F : Separation)
-    (ξ : Patterns Memory Neuron)
-    (σ : State Neuron)
-    (i : Neuron) : ℝ :=
-  energy F ξ (flip σ i) - energy F ξ σ
+  <main class="wrap">
+    <section>
+      <h2>Reading point</h2>
+      <p class="lead">This report formalizes a finite, exact layer of the Dense Associative Memory model of Krotov and Hopfield before the variance, Gaussian, and asymptotic capacity arguments begin.</p>
 
-/--
-At a stored memory, the flip-energy gap for polynomial separation
-is the difference between the current-overlap power sum and the
-flipped-overlap power sum.
--/
-theorem flipEnergyGap_stored_memory
-    {Neuron Memory : Type}
-    [Fintype Neuron]
-    [Fintype Memory]
-    [DecidableEq Neuron]
-    (n : ℕ)
-    (ξ : Patterns Memory Neuron)
-    (μ₀ : Memory)
-    (i : Neuron) :
-    flipEnergyGap (polyF n) ξ (patternState ξ μ₀) i =
-      (∑ ν, (overlap ξ (patternState ξ μ₀) ν) ^ n) -
-      (∑ ν, (overlap ξ
-        (flip (patternState ξ μ₀) i) ν) ^ n) := by
-  unfold flipEnergyGap energy polyF
-  ring
+      <div class="callout">
+        <div class="math">
+          \[
+          E(\sigma)
+          =
+          -\sum_{\mu}
+          F\!\left(
+          \sum_i \xi_i^\mu \sigma_i
+          \right),
+          \qquad
+          F(x)=x^n.
+          \]
+        </div>
+        <p>The formalization separates three levels that should not be conflated:</p>
+        <div class="math">
+          \[
+          \text{exact finite identities}
+          \;\neq\;
+          \text{probabilistic structure}
+          \;\neq\;
+          \text{asymptotic approximation}.
+          \]
+        </div>
+      </div>
+    </section>
 
-/--
-For a positive stored bit, flipping the bit produces the negative
-candidate, so the flip-energy gap equals the Eq. (4) update gap.
--/
-theorem flipEnergyGap_eq_updateGap_of_pos
-    {Neuron Memory : Type}
-    [Fintype Neuron]
-    [Fintype Memory]
-    [DecidableEq Neuron]
-    (F : Separation)
-    (ξ : Patterns Memory Neuron)
-    (μ : Memory)
-    (i : Neuron)
-    (h : patternState ξ μ i = 1) :
-    flipEnergyGap F ξ (patternState ξ μ) i =
-      updateGap F ξ (patternState ξ μ) i := by
-  rw [updateGap_eq_energy_difference]
-  unfold flipEnergyGap flip
-  have hflip :
-      Function.update (patternState ξ μ) i
-          (-patternState ξ μ i) =
-        candidateNeg (patternState ξ μ) i := by
-    unfold candidateNeg
-    rw [h]
-  have hcurrent :
-      candidatePos (patternState ξ μ) i =
-        patternState ξ μ := by
-    unfold candidatePos
-    rw [← h]
-    exact Function.update_eq_self i (patternState ξ μ)
-  rw [hflip, hcurrent]
-
-/--
-For a negative stored bit, flipping the bit produces the positive
-candidate, so the flip-energy gap is the negative of the Eq. (4)
-update gap.
--/
-theorem flipEnergyGap_eq_neg_updateGap_of_neg
-    {Neuron Memory : Type}
-    [Fintype Neuron]
-    [Fintype Memory]
-    [DecidableEq Neuron]
-    (F : Separation)
-    (ξ : Patterns Memory Neuron)
-    (μ : Memory)
-    (i : Neuron)
-    (h : patternState ξ μ i = -1) :
-    flipEnergyGap F ξ (patternState ξ μ) i =
-      -updateGap F ξ (patternState ξ μ) i := by
-  rw [updateGap_eq_energy_difference]
-  unfold flipEnergyGap flip
-  have hflip :
-      Function.update (patternState ξ μ) i
-          (-patternState ξ μ i) =
-        candidatePos (patternState ξ μ) i := by
-    unfold candidatePos
-    rw [h]
-    norm_num
-  have hcurrent :
-      candidateNeg (patternState ξ μ) i =
-        patternState ξ μ := by
-    unfold candidateNeg
-    rw [← h]
-    exact Function.update_eq_self i (patternState ξ μ)
-  rw [hflip, hcurrent]
-  ring
-
-/--
-A binary stored pattern has self-overlap equal to the number of neurons.
-This is the exact `N` appearing in the capacity calculation.
--/
-theorem overlap_self_of_binary
-    {Neuron Memory : Type}
-    [Fintype Neuron]
-    (ξ : Patterns Memory Neuron)
-    (μ : Memory)
-    (hbinary : IsBinaryPattern ξ μ) :
-    overlap ξ (patternState ξ μ) μ =
-      (Fintype.card Neuron : ℝ) := by
-  have hbinary' : ∀ i, ξ μ i = 1 ∨ ξ μ i = -1 := by
-    intro i
-    simpa [patternState] using hbinary i
-  unfold overlap patternState
-  have hterm : ∀ i, ξ μ i * ξ μ i = (1 : ℝ) := by
-    intro i
-    rcases hbinary' i with hpos | hneg
-    · rw [hpos]
-      norm_num
-    · rw [hneg]
-      norm_num
-  simp_rw [hterm]
-  simp
-
-/--
-Flipping one coordinate of a binary stored pattern changes its
-self-overlap from `N` to `N - 2`.
--/
-theorem overlap_self_flip_of_binary
-    {Neuron Memory : Type}
-    [Fintype Neuron]
-    [DecidableEq Neuron]
-    (ξ : Patterns Memory Neuron)
-    (μ : Memory)
-    (i : Neuron)
-    (hbinary : IsBinaryPattern ξ μ) :
-    overlap ξ (flip (patternState ξ μ) i) μ =
-      (Fintype.card Neuron : ℝ) - 2 := by
-  have hbit : ξ μ i * ξ μ i = (1 : ℝ) := by
-    rcases hbinary i with hpos | hneg
-    · have hi : ξ μ i = 1 := by
-        simpa [patternState] using hpos
-      rw [hi]
-      norm_num
-    · have hi : ξ μ i = -1 := by
-        simpa [patternState] using hneg
-      rw [hi]
-      norm_num
-
-  have hrest :
-      ∑ j ∈ Finset.univ.erase i,
-          ξ μ j *
-            Function.update (ξ μ) i (-ξ μ i) j =
-        ∑ j ∈ Finset.univ.erase i,
-          ξ μ j * ξ μ j := by
-    apply Finset.sum_congr rfl
-    intro j hj
-    have hji : j ≠ i := by
-      simpa using hj
-    simp [Function.update, hji]
-
-  have hflipped :
-      overlap ξ (flip (patternState ξ μ) i) μ =
-        (-1 : ℝ) +
-          ∑ j ∈ Finset.univ.erase i,
-            ξ μ j * ξ μ j := by
-    unfold overlap flip patternState
-    rw [← Finset.add_sum_erase _ _ (Finset.mem_univ i)]
-    rw [hrest]
-    simp [Function.update, hbit]
-
-  have hself :
-      overlap ξ (patternState ξ μ) μ =
-        (1 : ℝ) +
-          ∑ j ∈ Finset.univ.erase i,
-            ξ μ j * ξ μ j := by
-    unfold overlap patternState
-    rw [← Finset.add_sum_erase _ _ (Finset.mem_univ i)]
-    rw [hbit]
-
-  calc
-    overlap ξ (flip (patternState ξ μ) i) μ
-        = (-1 : ℝ) +
-            ∑ j ∈ Finset.univ.erase i,
-              ξ μ j * ξ μ j := hflipped
-    _ = overlap ξ (patternState ξ μ) μ - 2 := by
-          rw [hself]
-          ring
-    _ = (Fintype.card Neuron : ℝ) - 2 := by
-          rw [overlap_self_of_binary ξ μ hbinary]
-
-/--
-For polynomial separation `F(x) = x^n`, the selected stored memory
-contributes exactly `N^n - (N - 2)^n` to the one-flip energy gap.
-This is the exact signal term used before the paper's asymptotic
-approximation.
--/
-theorem self_signal_term
-    {Neuron Memory : Type}
-    [Fintype Neuron]
-    [DecidableEq Neuron]
-    (n : ℕ)
-    (ξ : Patterns Memory Neuron)
-    (μ : Memory)
-    (i : Neuron)
-    (hbinary : IsBinaryPattern ξ μ) :
-    (overlap ξ (patternState ξ μ) μ) ^ n -
-        (overlap ξ (flip (patternState ξ μ) i) μ) ^ n =
-      (Fintype.card Neuron : ℝ) ^ n -
-        ((Fintype.card Neuron : ℝ) - 2) ^ n := by
-  rw [overlap_self_of_binary ξ μ hbinary]
-  rw [overlap_self_flip_of_binary ξ μ i hbinary]
-
-/--
-The energy-gap contribution from memories other than the selected one.
--/
-def noiseTerm
-    {Neuron Memory : Type}
-    [Fintype Neuron]
-    [Fintype Memory]
-    [DecidableEq Neuron]
-    [DecidableEq Memory]
-    (n : ℕ)
-    (ξ : Patterns Memory Neuron)
-    (μ : Memory)
-    (i : Neuron) : ℝ :=
-  ∑ ν ∈ Finset.univ.erase μ,
-    ((overlap ξ (patternState ξ μ) ν) ^ n -
-      (overlap ξ (flip (patternState ξ μ) i) ν) ^ n)
-
-/--
-The one-flip energy gap splits exactly into the selected memory's
-signal contribution and the contribution from every other stored memory.
--/
-theorem flipEnergyGap_signal_noise_decomposition
-    {Neuron Memory : Type}
-    [Fintype Neuron]
-    [Fintype Memory]
-    [DecidableEq Neuron]
-    [DecidableEq Memory]
-    (n : ℕ)
-    (ξ : Patterns Memory Neuron)
-    (μ : Memory)
-    (i : Neuron)
-    (hbinary : IsBinaryPattern ξ μ) :
-    flipEnergyGap (polyF n) ξ (patternState ξ μ) i =
-      ((Fintype.card Neuron : ℝ) ^ n -
-        ((Fintype.card Neuron : ℝ) - 2) ^ n) +
-        noiseTerm n ξ μ i := by
-  rw [flipEnergyGap_stored_memory]
-  unfold noiseTerm
-  rw [Finset.sum_sub_distrib]
-  rw [← self_signal_term n ξ μ i hbinary]
-  rw [← Finset.add_sum_erase _ _ (Finset.mem_univ μ)]
-  rw [← Finset.add_sum_erase _ _ (Finset.mem_univ μ)]
-  ring
-
-/--
-All stored patterns are binary spin states.
--/
-def AreBinaryPatterns
-    {Neuron Memory : Type}
-    (ξ : Patterns Memory Neuron) : Prop :=
-  ∀ μ, IsBinaryPattern ξ μ
-
-/--
-A globally binary pattern collection gives a binary selected memory.
--/
-theorem selected_memory_binary
-    {Neuron Memory : Type}
-    (ξ : Patterns Memory Neuron)
-    (hbinary : AreBinaryPatterns ξ)
-    (μ : Memory) :
-    IsBinaryPattern ξ μ :=
-  hbinary μ
-
-/--
-A pattern-collection sample: one Boolean outcome for each
-(memory, neuron) coordinate.
--/
-abbrev Omega (Memory Neuron : Type) :=
-  Memory → Neuron → Bool
-
-/--
-The finite Boolean sample space inherits a finite enumeration from
-the finite memory and neuron index types.
--/
-noncomputable instance omegaFintype
-    (Memory Neuron : Type)
-    [Fintype Memory]
-    [Fintype Neuron] :
-    Fintype (Omega Memory Neuron) :=
-  Fintype.ofFinite _
-
-/-- Map a Boolean sample coordinate to a spin value in `{−1, +1}`. -/
-def toPM (b : Bool) : ℝ :=
-  if b then 1 else -1
-
-/-- The real-valued pattern collection induced by a Boolean sample. -/
-def patternsOf
-    {Memory Neuron : Type}
-    (ω : Omega Memory Neuron) :
-    Patterns Memory Neuron :=
-  fun μ i => toPM (ω μ i)
-
-/--
-Every sample induces an entirely binary collection of stored patterns.
-This is deterministic and requires no probability assumptions.
--/
-theorem areBinaryPatterns_patternsOf
-    {Memory Neuron : Type}
-    (ω : Omega Memory Neuron) :
-    AreBinaryPatterns (patternsOf ω) := by
-  intro μ i
-  change toPM (ω μ i) = 1 ∨ toPM (ω μ i) = -1
-  cases ω μ i <;> simp [toPM]
-
-/-- Uniform probability law on the finite Boolean sample space. -/
-noncomputable def uniformSamples
-    (Memory Neuron : Type)
-    [Fintype Memory]
-    [Fintype Neuron] :
-    PMF (Omega Memory Neuron) := by
-  letI : Nonempty (Omega Memory Neuron) :=
-    ⟨fun _ _ => false⟩
-  exact PMF.uniformOfFintype (Omega Memory Neuron)
-
-/--
-The marginal probability law of one Boolean pattern coordinate
-under the uniform sample-space distribution.
--/
-noncomputable def coordinatePMF
-    (Memory Neuron : Type)
-    [Fintype Memory]
-    [Fintype Neuron]
-    (μ : Memory)
-    (i : Neuron) :
-    PMF Bool :=
-  PMF.map (fun ω : Omega Memory Neuron => ω μ i)
-    (uniformSamples Memory Neuron)
-
-/--
-For a fixed coordinate `(μ, i)`, exactly half of all Boolean samples
-have value `true` at that coordinate.
--/
-theorem coordinate_true_fiber_card
-    (Memory Neuron : Type)
-    [Fintype Memory]
-    [Fintype Neuron]
-    (μ : Memory)
-    (i : Neuron) :
-    Fintype.card {ω : Omega Memory Neuron // ω μ i = true} * 2 =
-      Fintype.card (Omega Memory Neuron) := by
-  classical
-  let toggle : Omega Memory Neuron → Omega Memory Neuron :=
-    fun ω μ' i' =>
-      if μ' = μ ∧ i' = i then !(ω μ' i') else ω μ' i'
-
-  have hinvol : Function.Involutive toggle := by
-    intro ω
-    funext μ' i'
-    by_cases h : μ' = μ ∧ i' = i
-    · simp [toggle, h]
-    · simp [toggle, h]
-
-  let e :
-      {ω : Omega Memory Neuron // ω μ i = true} ≃
-        {ω : Omega Memory Neuron // ω μ i = false} :=
-    { toFun := fun ω =>
-        ⟨toggle ω.1, by
-          simp [toggle, ω.2]⟩
-      invFun := fun ω =>
-        ⟨toggle ω.1, by
-          simp [toggle, ω.2]⟩
-      left_inv := by
-        intro ω
-        apply Subtype.ext
-        exact hinvol ω.1
-      right_inv := by
-        intro ω
-        apply Subtype.ext
-        exact hinvol ω.1 }
-
-  have heq :
-      Fintype.card {ω : Omega Memory Neuron // ω μ i = true} =
-        Fintype.card {ω : Omega Memory Neuron // ω μ i = false} :=
-    Fintype.card_congr e
-
-  have hsplit :
-      Fintype.card (Omega Memory Neuron) =
-        Fintype.card {ω : Omega Memory Neuron // ω μ i = true} +
-        Fintype.card {ω : Omega Memory Neuron // ω μ i = false} := by
-    classical
-    let f : Omega Memory Neuron → Bool := fun ω => ω μ i
-    simpa [f] using
-      (Fintype.card_congr
-        (Equiv.sigmaFiberEquiv f)).symm
-
-  omega
-
-/--
-A fixed Boolean coordinate is `true` with probability one half
-under the uniform sample distribution.
--/
-theorem coordinatePMF_true
-    (Memory Neuron : Type)
-    [Fintype Memory]
-    [Fintype Neuron]
-    (μ : Memory)
-    (i : Neuron) :
-    coordinatePMF Memory Neuron μ i true = (2 : ENNReal)⁻¹ := by
-  classical
-
-  let FiberTrue :=
-    {ω : Omega Memory Neuron // ω μ i = true}
-
-  have hcard :
-      Fintype.card (Omega Memory Neuron) =
-        Fintype.card FiberTrue * 2 := by
-    simpa [FiberTrue] using
-      (coordinate_true_fiber_card Memory Neuron μ i).symm
-
-  have hfiber : Nonempty FiberTrue := by
-    exact ⟨⟨fun _ _ => true, rfl⟩⟩
-
-  have hpos : 0 < Fintype.card FiberTrue := by
-    exact Fintype.card_pos_iff.mpr hfiber
-
-  have hA0 :
-      ((Fintype.card FiberTrue : ℕ) : ENNReal) ≠ 0 := by
-    exact_mod_cast Nat.ne_of_gt hpos
-
-  have hAtop :
-      ((Fintype.card FiberTrue : ℕ) : ENNReal) ≠ ⊤ := by
-    simp
-
-  have hcardENN :
-      (Fintype.card (Omega Memory Neuron) : ENNReal) =
-        (Fintype.card FiberTrue : ENNReal) * 2 := by
-    exact_mod_cast hcard
-
-  calc
-    coordinatePMF Memory Neuron μ i true
+    <section>
+      <h2>1. Exact one-flip mechanics</h2>
+      <p>Let \( \xi^\mu \) be a selected stored pattern and let \( \operatorname{flip}_i \) negate coordinate \(i\). The one-flip energy change is</p>
+      <div class="math">
+        \[
+        \Delta E_i^\mu
         =
-        (coordinatePMF Memory Neuron μ i).toOuterMeasure {true} := by
-          exact
-            (PMF.toOuterMeasure_apply_singleton
-              (coordinatePMF Memory Neuron μ i) true).symm
+        E(\operatorname{flip}_i(\xi^\mu))
+        -
+        E(\xi^\mu).
+        \]
+      </div>
 
-    _ =
-        (uniformSamples Memory Neuron).toOuterMeasure
-          {ω : Omega Memory Neuron | ω μ i = true} := by
-          unfold coordinatePMF
-          rw [PMF.toOuterMeasure_map_apply]
-          congr 1
+      <p>The relation between flip-energy gap and update gap depends on the stored bit:</p>
+      <div class="math">
+        \[
+        \xi_i^\mu=+1
+        \Longrightarrow
+        \operatorname{flipEnergyGap}
+        =
+        \operatorname{updateGap},
+        \]
+        \[
+        \xi_i^\mu=-1
+        \Longrightarrow
+        \operatorname{flipEnergyGap}
+        =
+        -\operatorname{updateGap}.
+        \]
+      </div>
 
-    _ =
-        (Fintype.card
-            {ω : Omega Memory Neuron // ω μ i = true} : ENNReal) /
-          Fintype.card (Omega Memory Neuron) := by
-          unfold uniformSamples
-          exact
-            PMF.toOuterMeasure_uniformOfFintype_apply
-              (s := {ω : Omega Memory Neuron | ω μ i = true})
+      <p>These are kernel-checked by <code>flipEnergyGap_eq_updateGap_of_pos</code> and <code>flipEnergyGap_eq_neg_updateGap_of_neg</code>.</p>
+    </section>
 
-    _ =
-        (Fintype.card FiberTrue : ENNReal) /
-          Fintype.card (Omega Memory Neuron) := by
-          rfl
+    <section>
+      <h2>2. Selected-memory geometry</h2>
+      <p>For a binary stored pattern, the selected-memory self-overlap is exactly</p>
+      <div class="math">
+        \[
+        \langle \xi^\mu,\xi^\mu\rangle=N.
+        \]
+      </div>
+      <p>Flipping one coordinate changes that selected-memory overlap to</p>
+      <div class="math">
+        \[
+        \langle \xi^\mu,\operatorname{flip}_i(\xi^\mu)\rangle=N-2.
+        \]
+      </div>
+      <p>The relevant Lean theorems are <code>overlap_self_of_binary</code> and <code>overlap_self_flip_of_binary</code>.</p>
+    </section>
 
-    _ =
-        (Fintype.card FiberTrue : ENNReal) /
-          ((Fintype.card FiberTrue : ENNReal) * 2) := by
-          rw [hcardENN]
+    <section>
+      <h2>3. Exact signal term</h2>
+      <p>For polynomial separation \(F(x)=x^n\), the selected memory contributes the exact finite signal</p>
+      <div class="math">
+        \[
+        \boxed{
+        S_n(N)=N^n-(N-2)^n
+        }.
+        \]
+      </div>
+      <p><code>self_signal_term</code> proves this identity before any large-\(N\) approximation is introduced.</p>
+    </section>
 
-    _ = (2 : ENNReal)⁻¹ := by
-          rw [div_eq_mul_inv]
-          rw [ENNReal.mul_inv
-            (Or.inl hA0)
-            (Or.inl hAtop)]
-          exact ENNReal.mul_inv_cancel_left hA0 hAtop
+    <section>
+      <h2>4. Exact signal/noise decomposition</h2>
+      <p>The contribution from all memories other than the selected one is represented by <code>noiseTerm</code>. The one-flip energy gap then decomposes exactly as</p>
+      <div class="math">
+        \[
+        \boxed{
+        \Delta E_i^\mu
+        =
+        \left[N^n-(N-2)^n\right]
+        +
+        \operatorname{noiseTerm}(n,\xi,\mu,i)
+        }.
+        \]
+      </div>
+      <p>This is <code>flipEnergyGap_signal_noise_decomposition</code>. No variance estimate, Gaussian approximation, or asymptotic limit is required for this equality.</p>
+    </section>
 
-/--
-A fixed Boolean coordinate is `false` with probability one half
-under the uniform sample distribution.
--/
-theorem coordinatePMF_false
-    (Memory Neuron : Type)
-    [Fintype Memory]
-    [Fintype Neuron]
-    (μ : Memory)
-    (i : Neuron) :
-    coordinatePMF Memory Neuron μ i false = (2 : ENNReal)⁻¹ := by
-  let p := coordinatePMF Memory Neuron μ i
+    <section>
+      <h2>5. Explicit random-pattern interface</h2>
+      <p>The random-pattern layer is specified by the finite Boolean sample space</p>
+      <div class="math">
+        \[
+        \Omega
+        =
+        \mathrm{Memory}\to\mathrm{Neuron}\to\mathrm{Bool},
+        \]
+      </div>
+      <p>with a uniform PMF <code>uniformSamples</code>. Boolean coordinates are mapped to spin values by</p>
+      <div class="math">
+        \[
+        \operatorname{toPM}(\mathrm{true})=+1,
+        \qquad
+        \operatorname{toPM}(\mathrm{false})=-1.
+        \]
+      </div>
 
-  have hsum : p true + p false = 1 := by
-    simpa [p, tsum_bool] using PMF.tsum_coe p
+      <p>The Boolean marginals are proved fair, and the final bridge theorem <code>patternCoordinate_pm_half</code> gives the spin-valued statement</p>
+      <div class="math">
+        \[
+        \boxed{
+        \mathbb{P}(\xi_i^\mu=+1)
+        =
+        \mathbb{P}(\xi_i^\mu=-1)
+        =
+        \frac12
+        }.
+        \]
+      </div>
+    </section>
 
-  have htrue : p true = (2 : ENNReal)⁻¹ := by
-    simpa [p] using coordinatePMF_true Memory Neuron μ i
+    <section>
+      <h2>Formalization map</h2>
+      <div class="chain" aria-label="Formalization chain">
+        <div class="step"><strong>DAM energy</strong><small><code>energy</code>, <code>polyF</code></small></div>
+        <div class="step"><strong>One-flip gap</strong><small><code>flipEnergyGap</code></small></div>
+        <div class="step"><strong>\(N\to N-2\)</strong><small>selected-memory overlap</small></div>
+        <div class="step"><strong>Exact signal</strong><small>\(N^n-(N-2)^n\)</small></div>
+        <div class="step"><strong>Signal + noise</strong><small>exact decomposition</small></div>
+        <div class="step"><strong>Uniform ensemble</strong><small>fair Boolean marginal</small></div>
+        <div class="step"><strong>\(\pm1\) coordinate</strong><small><code>patternCoordinate_pm_half</code></small></div>
+      </div>
 
-  rw [htrue] at hsum
+      <div class="boundary">
+        <div class="now">
+          <h3>Formalized in this report</h3>
+          <p>Exact one-flip identities, selected-memory geometry, exact signal term, exact signal/noise decomposition, explicit finite uniform binary ensemble, and equiprobable \( \pm1 \) stored coordinates.</p>
+        </div>
+        <div class="next">
+          <h3>Subsequent checkpoints</h3>
+          <p>Distinct-coordinate independence → noise variance → Gaussian approximation → capacity scaling.</p>
+        </div>
+      </div>
+    </section>
 
-  apply (ENNReal.add_left_inj (by simp : (2 : ENNReal)⁻¹ ≠ ⊤)).mp
+    <section>
+      <h2>Kernel-checked theorem map</h2>
+      <table>
+        <thead>
+          <tr><th>Mathematical statement</th><th>Lean object / theorem</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Polynomial separation</td><td><code>polyF</code></td></tr>
+          <tr><td>One-coordinate flip</td><td><code>flip</code></td></tr>
+          <tr><td>Flip-energy gap</td><td><code>flipEnergyGap</code></td></tr>
+          <tr><td>Positive stored bit: flip gap = update gap</td><td><code>flipEnergyGap_eq_updateGap_of_pos</code></td></tr>
+          <tr><td>Negative stored bit: flip gap = −update gap</td><td><code>flipEnergyGap_eq_neg_updateGap_of_neg</code></td></tr>
+          <tr><td>Selected-memory self-overlap = \(N\)</td><td><code>overlap_self_of_binary</code></td></tr>
+          <tr><td>One-flip selected-memory overlap = \(N-2\)</td><td><code>overlap_self_flip_of_binary</code></td></tr>
+          <tr><td>Exact signal \(N^n-(N-2)^n\)</td><td><code>self_signal_term</code></td></tr>
+          <tr><td>Exact signal/noise split</td><td><code>flipEnergyGap_signal_noise_decomposition</code></td></tr>
+          <tr><td>Every sampled collection is binary</td><td><code>areBinaryPatterns_patternsOf</code></td></tr>
+          <tr><td>Fair Boolean coordinate</td><td><code>coordinatePMF_true</code>, <code>coordinatePMF_false</code></td></tr>
+          <tr><td>Fair spin-valued coordinate</td><td><code>patternCoordinate_pm_half</code></td></tr>
+        </tbody>
+      </table>
+    </section>
 
-  calc
-    coordinatePMF Memory Neuron μ i false + (2 : ENNReal)⁻¹
-        = 1 := by
-          simpa [p, add_comm] using hsum
-    _ = (2 : ENNReal)⁻¹ + (2 : ENNReal)⁻¹ := by
-          symm
-          exact ENNReal.inv_two_add_inv_two
+    <section>
+      <h2>Boundary of the present result</h2>
+      <p>The present kernel-checked boundary covers exact finite identities through the marginal equiprobability of each spin coordinate. Distinct-coordinate independence, noise variance, Gaussian approximation, and capacity scaling remain subsequent checkpoints.</p>
+      <div class="math">
+        \[
+        \text{distinct-coordinate independence}
+        \to
+        \text{noise variance}
+        \to
+        \text{Gaussian approximation}
+        \to
+        \text{capacity scaling}.
+        \]
+      </div>
+      <p>Keeping those stages explicit separates proved identities from stochastic assumptions and later asymptotic reasoning.</p>
+    </section>
 
-/--
-A stored pattern coordinate takes the values `+1` and `-1`
-with equal probability one half under the uniform sample law.
--/
-theorem patternCoordinate_pm_half
-    (Memory Neuron : Type)
-    [Fintype Memory]
-    [Fintype Neuron]
-    (μ : Memory)
-    (i : Neuron) :
-    PMF.map
-        (fun ω : Omega Memory Neuron => patternsOf ω μ i)
-        (uniformSamples Memory Neuron) 1
-        = (2 : ENNReal)⁻¹ ∧
-    PMF.map
-        (fun ω : Omega Memory Neuron => patternsOf ω μ i)
-        (uniformSamples Memory Neuron) (-1)
-        = (2 : ENNReal)⁻¹ := by
-  have hmap :
-      PMF.map
-          (fun ω : Omega Memory Neuron => patternsOf ω μ i)
-          (uniformSamples Memory Neuron) =
-        PMF.map toPM (coordinatePMF Memory Neuron μ i) := by
-    unfold coordinatePMF
-    rw [PMF.map_comp]
-    rfl
+    <section>
+      <h2>How to use this repo</h2>
+      <p class="lead">Use the repository as a checked map from the DAM equations in the source paper to the exact finite statements currently proved in Lean.</p>
 
-  constructor
-  · rw [hmap]
-    rw [PMF.map_apply]
-    rw [tsum_bool]
-    have hne : (1 : ℝ) ≠ -1 := by
-      norm_num
-    simp [toPM, hne, coordinatePMF_true Memory Neuron μ i]
+      <div class="howto">
+        <div class="item">
+          <div class="n">01 · Read</div>
+          <strong>Start with the report boundary</strong>
+          <span>Use this page to distinguish exact finite identities from later probabilistic and asymptotic checkpoints.</span>
+        </div>
+        <div class="item">
+          <div class="n">02 · Inspect</div>
+          <strong>Open the Lean statements</strong>
+          <span><code>LeanDAM/Basic.lean</code> contains the DAM objects and update mechanics; <code>LeanDAM/Capacity.lean</code> contains the one-flip signal and random-pattern interface.</span>
+        </div>
+        <div class="item">
+          <div class="n">03 · Check</div>
+          <strong>Run the Lean build</strong>
+          <span><code>lake build</code> checks the current theorem state against the pinned Lean/mathlib environment.</span>
+        </div>
+        <div class="item">
+          <div class="n">04 · Extend</div>
+          <strong>Continue at the next checkpoint</strong>
+          <span>Distinct-coordinate independence is the next formal target before noise variance, Gaussian approximation, and capacity scaling.</span>
+        </div>
+      </div>
 
-  · rw [hmap]
-    rw [PMF.map_apply]
-    rw [tsum_bool]
-    have hne : (-1 : ℝ) ≠ 1 := by
-      norm_num
-    simp [toPM, hne, coordinatePMF_false Memory Neuron μ i]
+      <div class="repo-path"><code>lake build</code></div>
 
-end LeanDAM
+      <p>The theorem map above is the index: locate a mathematical statement, follow its Lean theorem name, then inspect the exact hypotheses and conclusion in the source file.</p>
+    </section>
+
+    <section>
+      <h2>Source and verification</h2>
+      <div class="sourcebox">
+        <a href="https://arxiv.org/abs/1606.01164">
+          <strong>Krotov &amp; Hopfield</strong>
+          <span>Dense Associative Memory for Pattern Recognition · arXiv:1606.01164v2</span>
+        </a>
+        <a href="https://github.com/thinkthoughts/lean-dense-associative-memory">
+          <strong>Lean repository</strong>
+          <span>thinkthoughts/lean-dense-associative-memory</span>
+        </a>
+      </div>
+      <p style="margin-top:16px">Current verified build state: <strong>8940 jobs completed successfully</strong>.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-statement">Admissible generalizations trail leading specifications.</div>
+      <nav class="footer-links" aria-label="Related sites">
+        <a href="https://labreports.app/">labreports.app</a>
+        <a href="https://goodmath.app/">goodmath.app</a>
+        <a href="https://climatereality.app/">climatereality.app</a>
+        <a href="https://climatedemocracy.app/">climatedemocracy.app</a>
+        <a href="https://danhawkley.dev/">danhawkley.dev</a>
+        <a href="https://github.com/readingpoint">github.com/readingpoint</a>
+      </nav>
+      <div class="footer-copyright">© 2026 · Dense Associative Memory report · labreports.app/dam</div>
+    </div>
+  </footer>
+</body>
+</html>

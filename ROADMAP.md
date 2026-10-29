@@ -1,6 +1,6 @@
 # Lean DAM Roadmap
 
-**October 29, 2026.** This roadmap reconciles the Claude and DeepSeek reviews, preserves the historical checkpoints in `SPECIFICATION.md`, and distinguishes completed work from proposed results. An unchecked item has not been verified at the current HEAD.
+**October 29, 2026 · updated at `main` `d13c271`.** CP6c.1 and CP6c.2 are complete and kernel-verified; **CP6c.3 (exact finite second moment) is the next mathematical checkpoint.** This roadmap reconciles the Claude and DeepSeek reviews, preserves the historical checkpoints in `SPECIFICATION.md`, and distinguishes completed work from proposed results. An unchecked item has not been verified at the current HEAD.
 
 ## Gate R0 — Recover a verifiable baseline
 
@@ -10,13 +10,17 @@
 - [x] **R0.4 CI.** The push/PR workflow ran successfully on `gate-r0` (green check reported October 29, 2026).
 - [x] **R0.5 Update verification status.** Historical CP2–CP6c declarations restored and verified at `b02311c`; evidence committed at `bfff927`. Proposed capacity extensions remain open.
 
-*Gate R0: all five checkpoints complete on `gate-r0`. Merge into `main` remains a separate action.*
+*Gate R0: all five checkpoints complete; merged into `main`.*
 
 ## Track A — Exact finite capacity mathematics
 
 - [x] **CP6c.1 — Mean-zero cross-talk.** Define a finite uniform ±1 pattern ensemble with an explicitly fixed target memory; prove `E[noiseTerm | target] = 0` by finite symmetry/involution. Confirm whether the source's `polyF` agrees with the primary paper's rectified-polynomial convention before claiming exact source equivalence. *Verified on `cp6c-mean-zero` (`6d77ae7`, audit `7e31c72`): `LeanDAM/CrossTalk.lean`, main theorem `condMean_noiseTerm_eq_zero`; the involution lemma holds for arbitrary `F`, covering both `polyF` (paper's polynomial case, used on p. 2) and the rectified Eq. (3). VPS build 8,941 jobs; 36 axiom reports, standard axioms only, no `sorryAx`; CI green.*
-- [ ] **CP6c.2 — Expected gap.** Combine the restored exact `flipEnergyGap_signal_noise_decomposition` theorem with CP6c.1 to prove `E[ΔE | target] = N^n - (N-2)^n` for precisely stated finite parameters. Nonzero noise variance does not invalidate this identity. *Source-level on `cp6c-expected-gap`: `LeanDAM/ExpectedGap.lean`, main theorem `condMean_flipEnergyGap_eq_signal`, stated for `polyF n` only. Checked once the build and 40-report axiom audit pass (see `REPORT.md`).*
-- [ ] **CP6c.3 — Exact second moment.** Derive a finite formula for cross-talk variance and justify all independence/cross-term cancellations. The paper's large-`N` variance formula is not an exact finite identity.
+- [x] **CP6c.2 — Expected gap.** Combine the restored exact `flipEnergyGap_signal_noise_decomposition` theorem with CP6c.1 to prove `E[ΔE | target] = N^n - (N-2)^n` for precisely stated finite parameters. Nonzero noise variance does not invalidate this identity. *Verified and merged (`3d120ab`, audit `d13c271`): `LeanDAM/ExpectedGap.lean`, main theorem `condMean_flipEnergyGap_eq_signal`, stated for `polyF n` only, with `N − 2` formed in `ℝ`. Build 8,942 jobs; 40 axiom reports, standard axioms only, no `sorryAx`; CI green on `main`.*
+- [ ] **CP6c.3 — Exact second moment (next).** Derive a finite formula for cross-talk variance and justify all independence/cross-term cancellations. The paper's large-`N` variance formula is not an exact finite identity. Proposed route, each step a separate lemma:
+    1. *Locality:* toggling `(ν, i)` leaves the `ν′`-th cross-talk summand unchanged for `ν′ ∉ {ν, μ}`; with the CP6c.1 reversal lemma this cancels every cross term `E[g_ν g_ν′ | target]`.
+    2. *Gauge invariance:* the fiber bijection `ξⱼ^ν ↦ ξⱼ^ν tⱼ` makes `E[g_ν² | target]` independent of the target pattern and of `ν`.
+    3. *Binomial count:* group by the number of `+1` entries among the `N − 1` off-target coordinates.
+    Target identity (brute-force checked, not yet proved): `E[η² | target] = (K−1) · 2^{−(N−1)} · Σ_{k=0}^{N−1} C(N−1,k) · ((2k−N+2)ⁿ − (2k−N)ⁿ)²`.
 - [ ] **CP6c.4 — Tail bound.** Apply an explicitly justified finite-probability inequality (e.g. Cantelli or Chebyshev) to obtain a certified bound for one-flip retrieval error, with ties addressed.
 - [ ] **CP6c.5 — Capacity bound.** Derive a finite threshold from the certified tail bound. Treat the paper's Gaussian approximation and asymptotic `K_max` separately, under their actual hypotheses.
 
@@ -40,8 +44,8 @@ This is independent of stochastic retrieval capacity: a numerical comparison nee
 
 ## Order
 
-First `R0.1–R0.5`, then `CP6c.1 → CP6c.2 → CP6c.3 → CP6c.4`; `B1 → B2` may proceed independently once the restored baseline is sound. Track B uses new labels to avoid colliding with the pre-existing CP7–CP9 reading points.
+Completed: `R0.1–R0.5`, `CP6c.1`, `CP6c.2`. Next: `CP6c.3 → CP6c.4 → CP6c.5`; `B1 → B2` may proceed independently once the restored baseline is sound. Track B uses new labels to avoid colliding with the pre-existing CP7–CP9 reading points.
 
 ## Supporting documents
 
-[Specification](SPECIFICATION.md) · [Verification report](REPORT.md) · [Claude review](reviews/CLAUDE_REVIEW_2026-10-29.md) · [DeepSeek review](reviews/DEEPSEEK_REVIEW_2026-10-29.md) · [Reconciliation](reviews/RECONCILIATION_2026-10-29.md)
+[Current report](https://translatepi.ai/dam/) · [Historical report](https://labreports.app/dam/) · [Specification](SPECIFICATION.md) · [Verification report](REPORT.md) · [Claude review](reviews/CLAUDE_REVIEW_2026-10-29.md) · [DeepSeek review](reviews/DEEPSEEK_REVIEW_2026-10-29.md) · [Reconciliation](reviews/RECONCILIATION_2026-10-29.md)

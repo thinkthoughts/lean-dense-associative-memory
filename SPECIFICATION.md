@@ -784,6 +784,42 @@ Gaussian approximation
 \]
 capacity scaling.
 
+### Reading-point refinement — CP6c.1–CP6c.2 (October 29, 2026)
+
+*Refines the CP6c "Exact signal" and "Random-pattern specification" items above from the RP2 source (Krotov–Hopfield p. 2). Earlier text in this section is retained as written. Lean: `LeanDAM/CrossTalk.lean`, `LeanDAM/ExpectedGap.lean`; verified at `main` `d13c271`.*
+
+**Target-pattern fiber.** Conditioning on the stored memory \(\xi^\mu\) is conditioning on the finite fiber
+
+\[
+\Omega_t=\{\omega:\mathrm{Memory}\to\mathrm{Neuron}\to\mathrm{Bool}\;\mid\;\omega_\mu=t\},
+\]
+
+for a fixed Boolean pattern \(t\), with \(\xi=\mathrm{toPM}\circ\omega\). Under the uniform law the conditional expectation is the average over \(\Omega_t\) (`condMeanGivenTarget`), and \(\Omega_t\) is nonempty (`targetFiber_card_pos`). No separate independence theorem is invoked: the proofs work on the finite product space directly.
+
+**Coordinate-toggle involution.** For a non-target memory \(\nu\neq\mu\), `toggleAt ν i` negates the single Boolean coordinate \((\nu,i)\). It is an involution and leaves \(\omega_\mu\) unchanged, so it permutes \(\Omega_t\).
+
+**Why non-target contributions cancel.** Write the \(\nu\)-th cross-talk contribution to \(\Delta E_i^\mu\) as
+
+\[
+g_\nu=F(a+b)-F(-a+b),\qquad a=\xi_i^\nu\xi_i^\mu,\quad b=\sum_{j\neq i}\xi_j^\nu\xi_j^\mu .
+\]
+
+The toggle sends \(a\mapsto -a\) and fixes \(b\), hence sends \(g_\nu\mapsto -g_\nu\). Summing over \(\Omega_t\) and reindexing by the involution gives \(S=-S\), so \(S=0\). The argument uses no property of \(F\): it holds for the polynomial energy of the capacity calculation and equally for the rectified polynomial of Eq. (3).
+
+\[
+\mathbb E\bigl[\eta_i^\mu\mid\xi^\mu\bigr]=0\quad\text{for every }F.
+\]
+
+**Exact expected-gap identity.** For \(F(x)=x^n\), the deterministic decomposition (CP6b) holds at every sample, the signal is constant on \(\Omega_t\), and the cross-talk averages to zero, so
+
+\[
+\mathbb E\bigl[\Delta E_i^\mu\mid\xi^\mu\bigr]=N^n-(N-2)^n
+\]
+
+exactly, for every finite \(N\), \(K\) and \(n\), with \(N-2\) formed in \(\mathbb R\). This settles the equality in the source's \(\langle\Delta E\rangle=N^n-(N-2)^n\approx 2nN^{n-1}\); the \(\approx\) remains an asymptotic source claim. The closed form is specific to the polynomial energy.
+
+**What remains open.** A zero mean constrains only the first moment. The cross-talk takes nonzero values of both signs (for example \(N=4\), \(K=3\), \(n=3\): values from \(-112\) to \(112\)), so the probability that \(\Delta E_i^\mu\le 0\) depends on its spread. The variance (CP6c.3), a certified tail bound (CP6c.4) and any capacity threshold (CP6c.5) require further theorems. The paper's large-\(N\) variance \(\Omega_n(K-1)N^{n-1}\) and its Gaussian estimate retain their status as RP2 approximations.
+
 ## CP7 — Energy Transformer Boundary
 
 Use the cited Energy Transformer primary source before formalizing attention-energy or transformer correspondence claims.

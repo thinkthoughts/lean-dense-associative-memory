@@ -1,15 +1,56 @@
 # Dense Associative Memory — Verification Report
 
-**October 29, 2026 · Gate R0 verification passed (branch `gate-r0`)**
+**October 29, 2026 · Final state at `main` `d13c271`: CP6c.1 and CP6c.2 kernel-verified.**
 
-The documentation checkpoint reviewed snapshot `f52348e`; `main` was at `a3b4b03` before the repair. Branch `gate-r0` restores the Lean source and adds CI and audit scripts. The repaired source at `b02311c` built successfully on the VPS, with evidence committed at `bfff927`. The GitHub Actions workflow was also reported green.
+Current public report: [translatepi.ai/dam](https://translatepi.ai/dam/). Historical reading point: [labreports.app/dam](https://labreports.app/dam/) (source in `docs/index.html`).
 
-## Findings
+## Verification state at `d13c271`
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Toolchain | `lean-toolchain` | `leanprover/lean4:v4.35.0-rc2` |
+| Mathlib | `lake-manifest.json` | `a218e50f981942cba4fd060faff7cae680805062` (pinned and resolved) |
+| Source guard | `bash scripts/check-lean-sources.sh` | pass |
+| Build | `lake build DenseAssociativeMemory` | 8,942 jobs, success |
+| Axiom audit | `bash scripts/axiom-audit.sh` | 40/40 declarations; 38 × `[propext, Classical.choice, Quot.sound]`, 2 × `[propext, Quot.sound]` (`toggleAt_toggleAt`, `toggleAt_target`); zero `sorryAx` |
+| GitHub Actions | `.github/workflows/lean.yml` | green on `main` |
+| Raw evidence | `verification/` | `cp6c2-axiom-audit.txt` (40 reports), `cp6c1-axiom-audit.txt` (36), Gate R0 logs |
+
+### Kernel-checked results
+
+Throughout, `Omega Memory Neuron = Memory → Neuron → Bool`, `patternsOf ω = toPM ∘ ω`, `N = Fintype.card Neuron`, and for a target memory `μ` and Boolean target pattern `t`,
+
+`condMeanGivenTarget μ t X = (Σ_ω [ω μ = t] · X ω) / #{ω | ω μ = t}`,
+
+the average of `X` over the target fiber: the conditional expectation given `ξ^μ = toPM ∘ t` under the uniform law. `targetFiber_card_pos` proves every fiber is nonempty.
+
+| Checkpoint | Declaration | Mathematical statement | Hypotheses |
+| --- | --- | --- | --- |
+| CP6b | `flipEnergyGap_signal_noise_decomposition` | `ΔE_i^μ = (Nⁿ − (N−2)ⁿ) + noiseTerm n ξ μ i` | `IsBinaryPattern ξ μ`; `F = polyF n`; deterministic |
+| CP6c.1 | `condMean_crossTalk_eq_zero` | `condMeanGivenTarget μ t (crossTalk F (patternsOf ·) μ i) = 0` | any `F : ℝ → ℝ`; finite types with decidable equality |
+| CP6c.1 | `condMean_noiseTerm_eq_zero` | `condMeanGivenTarget μ t (noiseTerm n (patternsOf ·) μ i) = 0` | `F = polyF n` (via `noiseTerm_eq_crossTalk`, definitional) |
+| CP6c.2 | `condMean_flipEnergyGap_eq_signal` | `condMeanGivenTarget μ t (flipEnergyGap (polyF n) (patternsOf ·) (patternState (patternsOf ·) μ) i) = oneFlipSignal N n` | `oneFlipSignal N n = (N:ℝ)ⁿ − ((N:ℝ) − 2)ⁿ`; any `n`; no size regime |
+
+### Evidence classes
+
+| Class | Content |
+| --- | --- |
+| Source-paper claims (Krotov–Hopfield p. 2) | `⟨ΔE⟩ = Nⁿ − (N−2)ⁿ ≈ 2nNⁿ⁻¹`; `Σ² = Ωₙ(K−1)Nⁿ⁻¹` (large `N`); Gaussian `P_error`; `K_max = αₙNⁿ⁻¹`; no-error scaling (Eq. 6) |
+| Kernel-checked | the exact equality in `⟨ΔE⟩ = Nⁿ − (N−2)ⁿ`, conditioned on the target pattern, for every finite `N`, `K`, `n` (table above) |
+| Derived, unproved | the exact finite second moment proposed for CP6c.3 (`ROADMAP.md`), brute-force checked on small networks |
+| Outside these proofs | the `≈`, variance asymptotics, Gaussian estimate, capacity scaling, numerical implementation and hardware behaviour |
+
+### Record correction
+
+`verification/env.txt` (Gate R0 run) lists `mathlib_rev_resolved: e50948299c4d…`. That value is the `plausible` dependency's revision: `scripts/r0-verify.sh` reads the first `"rev"` after `"name": "mathlib"`, but `lake-manifest.json` places `"rev"` before `"name"`. The committed manifest resolves Mathlib to the pinned `a218e50f981942cba4fd060faff7cae680805062`. The raw evidence file is preserved unchanged; the script fix is left for a non-documentation change.
+
+## History
+
+The sections below record each checkpoint as it was verified.
 
 - `LeanDAM/Basic.lean` contains the overlap, generalized energy, quadratic interaction expansion, energy-based asynchronous update, and deterministic stability declarations.
 - Before Gate R0, imported `LeanDAM/Capacity.lean` contained HTML beginning `<!doctype html>`. The historical Lean source is restored and the HTML preserved at `docs/index.html`.
-- Restored capacity proofs from `0077024` include one-flip energy, exact signal/noise decomposition, and finite random-pattern coordinate marginals; the restored source now builds.
-- `SPECIFICATION.md` describes further research targets beyond the current verified state.
+- Restored capacity proofs from `0077024` include one-flip energy, exact signal/noise decomposition, and finite random-pattern coordinate marginals.
 
 ## Gate R0 — evidence on branch `gate-r0`
 
@@ -93,7 +134,7 @@ For `ν ≠ μ`, `toggleAt ν i` negates Boolean coordinate `(ν, i)`. It is an 
 
 ## CP6c.2 — exact expected one-flip energy gap (branch `cp6c-expected-gap`)
 
-**Status: source-level, awaiting kernel check.** `LeanDAM/ExpectedGap.lean` is imported by `DenseAssociativeMemory.lean`. The authoring environment cannot run Lean; build and axiom rows below are pending until the VPS or CI run.
+**Status: kernel-verified at `3d120ab`; audit recorded at `d13c271`; merged into `main`.** `LeanDAM/ExpectedGap.lean` is imported by `DenseAssociativeMemory.lean`.
 
 ### Statement
 
@@ -138,26 +179,26 @@ Krotov–Hopfield p. 2 states `⟨ΔE⟩ = Nⁿ − (N−2)ⁿ ≈ 2nNⁿ⁻¹`.
 | `bash scripts/check-lean-sources.sh` | exit 0: 6 Lean files pass |
 | `scripts/AxiomAudit.lean` | extended from 36 to 40 reports |
 
-### Awaiting kernel check
+### Kernel verification
 
 | Check | Command | Result |
 | --- | --- | --- |
-| Build | `lake build DenseAssociativeMemory` | pending |
-| Axiom footprint | `bash scripts/axiom-audit.sh` (40 reports) | pending |
-| CI | push of `cp6c-expected-gap` | pending |
+| Build | `lake build DenseAssociativeMemory` | 8,942 jobs, success |
+| Axiom footprint | `bash scripts/axiom-audit.sh` (40 reports) | 38 × `[propext, Classical.choice, Quot.sound]`, 2 × `[propext, Quot.sound]`; zero `sorryAx`. Evidence: `verification/cp6c2-axiom-audit.txt` |
+| CI | GitHub Actions on `main` | green |
 
 ## Mathematical boundary
 
-Historical source reportedly proves an exact decomposition:
+The restored source proves the exact decomposition:
 
 \[
 \Delta E_i^\mu=\bigl[N^n-(N-2)^n\bigr]+\eta_i^\mu.
 \]
 
-Conditional mean-zero noise under independent uniform non-target spin patterns is **kernel-verified** (CP6c.1 above). The resulting exact conditional expected gap is CP6c.2, at source level above. By linearity the expected gap equals the deterministic signal even though the noise has nonzero variance. For fixed `n`, the signal has leading growth `2n N^(n-1)`.
+Conditional mean-zero noise under independent uniform non-target spin patterns is **kernel-verified** (CP6c.1 above). The resulting exact conditional expected gap (CP6c.2) is also kernel-verified. By linearity the expected gap equals the deterministic signal even though the noise has nonzero variance. For fixed `n`, the signal has leading growth `2n N^(n-1)`; that asymptotic statement is elementary but remains outside the formalization.
 
 The variance asymptotic, Gaussian retrieval-error estimate, and capacity scalings remain source claims, not checked theorems. No Energy Transformer architecture, circuit, energy-per-token metric, or Dynamical Mind hardware property has been formally verified here.
 
 ## Provenance
 
-See [Claude's review](reviews/CLAUDE_REVIEW_2026-10-29.md), [DeepSeek's review](reviews/DEEPSEEK_REVIEW_2026-10-29.md), [editorial reconciliation](reviews/RECONCILIATION_2026-10-29.md), and the adopted [roadmap](ROADMAP.md). The attributed review files are retained without rewriting their conclusions.
+See [Claude's review](reviews/CLAUDE_REVIEW_2026-10-29.md), [DeepSeek's review](reviews/DEEPSEEK_REVIEW_2026-10-29.md), [editorial reconciliation](reviews/RECONCILIATION_2026-10-29.md), the adopted [roadmap](ROADMAP.md), the current public report at [translatepi.ai/dam](https://translatepi.ai/dam/), and the historical reading point at [labreports.app/dam](https://labreports.app/dam/). The attributed review files are retained without rewriting their conclusions.

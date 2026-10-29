@@ -24,3 +24,17 @@ import DenseAssociativeMemory
 #print axioms LeanDAM.coordinatePMF_true
 #print axioms LeanDAM.coordinatePMF_false
 #print axioms LeanDAM.patternCoordinate_pm_half
+#print axioms LeanDAM.overlap_split
+#print axioms LeanDAM.flip_self_coord
+#print axioms LeanDAM.flip_other_coord
+#print axioms LeanDAM.toPM_not
+#print axioms LeanDAM.noiseTerm_eq_crossTalk
+#print axioms LeanDAM.crossSummand_neg_of_coord_negation
+#print axioms LeanDAM.toggleAt_toggleAt
+#print axioms LeanDAM.toggleAt_target
+#print axioms LeanDAM.crossSummand_toggleAt
+#print axioms LeanDAM.sum_condCross_eq_zero
+#print axioms LeanDAM.sum_cond_crossTalk_eq_zero
+#print axioms LeanDAM.targetFiber_card_pos
+#print axioms LeanDAM.condMean_noiseTerm_eq_zero
+#print axioms LeanDAM.condMean_crossTalk_eq_zero

@@ -14,7 +14,7 @@
 
 ## Track A — Exact finite capacity mathematics
 
-- [ ] **CP6c.1 — Mean-zero cross-talk.** Define a finite uniform ±1 pattern ensemble with an explicitly fixed target memory; prove `E[noiseTerm | target] = 0` by finite symmetry/involution. Confirm whether the source's `polyF` agrees with the primary paper's rectified-polynomial convention before claiming exact source equivalence.
+- [ ] **CP6c.1 — Mean-zero cross-talk.** Define a finite uniform ±1 pattern ensemble with an explicitly fixed target memory; prove `E[noiseTerm | target] = 0` by finite symmetry/involution. Confirm whether the source's `polyF` agrees with the primary paper's rectified-polynomial convention before claiming exact source equivalence. *Source-level on `cp6c-mean-zero`: `LeanDAM/CrossTalk.lean`, main theorem `condMean_noiseTerm_eq_zero`; the involution lemma holds for arbitrary `F`, covering both `polyF` (paper's polynomial case, used on p. 2) and the rectified Eq. (3). Checked once the build and 36-report axiom audit pass (see `REPORT.md`).*
 - [ ] **CP6c.2 — Expected gap.** Combine the restored exact `flipEnergyGap_signal_noise_decomposition` theorem with CP6c.1 to prove `E[ΔE | target] = N^n - (N-2)^n` for precisely stated finite parameters. Nonzero noise variance does not invalidate this identity.
 - [ ] **CP6c.3 — Exact second moment.** Derive a finite formula for cross-talk variance and justify all independence/cross-term cancellations. The paper's large-`N` variance formula is not an exact finite identity.
 - [ ] **CP6c.4 — Tail bound.** Apply an explicitly justified finite-probability inequality (e.g. Cantelli or Chebyshev) to obtain a certified bound for one-flip retrieval error, with ties addressed.

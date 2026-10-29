@@ -1,14 +1,14 @@
 # Dense Associative Memory — Verification Report
 
-**October 29, 2026 · Gate R0 in progress (branch `gate-r0`)**
+**October 29, 2026 · Gate R0 verification passed (branch `gate-r0`)**
 
-The documentation checkpoint reviewed snapshot `f52348e`; `main` is now at `a3b4b03`. Branch `gate-r0` restores the Lean source and adds CI and audit scripts. The kernel-checked build and axiom audit at the repaired commit are pending and are recorded below once run.
+The documentation checkpoint reviewed snapshot `f52348e`; `main` was at `a3b4b03` before the repair. Branch `gate-r0` restores the Lean source and adds CI and audit scripts. The repaired source at `b02311c` built successfully on the VPS, with evidence committed at `bfff927`. The GitHub Actions workflow was also reported green.
 
 ## Findings
 
 - `LeanDAM/Basic.lean` contains the overlap, generalized energy, quadratic interaction expansion, energy-based asynchronous update, and deterministic stability declarations.
-- Imported `LeanDAM/Capacity.lean` at HEAD contains HTML beginning `<!doctype html>` and cannot be parsed as Lean.
-- Claude's Git-history audit reports recoverable historical capacity proofs at `0077024`: one-flip energy, exact signal/noise decomposition, and finite random-pattern coordinate marginals. Those are absent from the supplied HEAD.
+- Before Gate R0, imported `LeanDAM/Capacity.lean` contained HTML beginning `<!doctype html>`. The historical Lean source is restored and the HTML preserved at `docs/index.html`.
+- Restored capacity proofs from `0077024` include one-flip energy, exact signal/noise decomposition, and finite random-pattern coordinate marginals; the restored source now builds.
 - `SPECIFICATION.md` describes further research targets beyond the current verified state.
 
 ## Gate R0 — evidence on branch `gate-r0`
@@ -21,21 +21,22 @@ The documentation checkpoint reviewed snapshot `f52348e`; `main` is now at `a3b4
 | HTML preservation | `diff <(git show f52348e:LeanDAM/Capacity.lean) docs/index.html` | byte-identical (591 lines), moved with `git mv` |
 | Unchanged Lean context | `git diff 0077024 -- LeanDAM/Basic.lean DenseAssociativeMemory.lean lakefile.toml lean-toolchain` | empty: the Lean tree equals commit `0077024` exactly |
 | Theorem statements | restoration only | unchanged: 22 theorems/lemmas, 46 public declarations |
-| Integrity guard, repaired tree | `bash scripts/check-lean-sources.sh` | exit 0: 3 Lean files pass |
+| Integrity guard, repaired tree | `bash scripts/check-lean-sources.sh` | exit 0: 4 Lean files pass |
 | Integrity guard, original HEAD `a3b4b03` | same script | exit 1: flags `LeanDAM/Capacity.lean` (HTML markup; first line `<!doctype html>`) |
 | Guard self-test | synthetic files | docstring/comment mentions pass; `by sorry` and `axiom bad : False` fail |
 | `sorry` / `admit` / `axiom` tokens | guard, comments and strings stripped | none in `Basic.lean`, `Capacity.lean`, `DenseAssociativeMemory.lean` |
 
-### Awaiting the pinned build
+### Pinned build and axiom evidence
 
 | Check | Command | Result |
 | --- | --- | --- |
-| Toolchain | `lean --version` with `leanprover/lean4:v4.35.0-rc2` | pending |
-| Mathlib | pinned rev `a218e50f981942cba4fd060faff7cae680805062` | pending (`lake-manifest.json` is untracked; lake resolves the pinned commit) |
-| Build | `lake build DenseAssociativeMemory` | pending: exit code, warnings, duration |
-| Axiom footprint | `bash scripts/axiom-audit.sh` over all 22 theorems/lemmas | pending; pass requires axioms ⊆ {`propext`, `Classical.choice`, `Quot.sound`} and zero `sorryAx` |
+| Toolchain | `lean --version` | Lean 4.35.0-rc2, Lake 5.0.0 |
+| Mathlib | `lake-manifest.json` | resolved manifest committed at `bfff927`; pinned rev `a218e50f981942cba4fd060faff7cae680805062` |
+| Build | `lake build DenseAssociativeMemory` | exit 0, 8,940 jobs, zero warnings |
+| Axiom footprint | `bash scripts/axiom-audit.sh` | 22/22 audited; only `propext`, `Classical.choice`, `Quot.sound`; no `sorryAx` |
+| GitHub Actions | `.github/workflows/lean.yml` on `gate-r0` | green check reported October 29, 2026 |
 
-The review environment for this branch had its Lean toolchain and Mathlib downloads blocked by network policy. These rows therefore await `bash scripts/r0-verify.sh` on a machine with `elan`, or the first run of `.github/workflows/lean.yml`; both write `build.log` and `axiom-audit.txt`.
+VPS evidence is preserved in `verification/env.txt`, `verification/guard.log`, `verification/cache.log`, `verification/build.log`, `verification/axiom-audit.txt` and `verification/axiom-audit.log`. The CI result is reported separately.
 
 ### Verification machinery added
 

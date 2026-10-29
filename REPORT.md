@@ -48,7 +48,7 @@ VPS evidence is preserved in `verification/env.txt`, `verification/guard.log`, `
 
 ## CP6c.1 — conditional mean-zero cross-talk (branch `cp6c-mean-zero`)
 
-**Status: source-level, awaiting kernel check.** The module `LeanDAM/CrossTalk.lean` is written and imported by `DenseAssociativeMemory.lean`. The authoring environment cannot run Lean, so build and axiom results below are pending until `lake build DenseAssociativeMemory` and `bash scripts/axiom-audit.sh` run on the VPS or in CI.
+**Status: kernel-verified at `6d77ae7`; audit recorded at `7e31c72`.** The module `LeanDAM/CrossTalk.lean` is imported by `DenseAssociativeMemory.lean`.
 
 ### Statement
 
@@ -83,13 +83,68 @@ For `ν ≠ μ`, `toggleAt ν i` negates Boolean coordinate `(ν, i)`. It is an 
 | `bash scripts/check-lean-sources.sh` | exit 0: 5 Lean files pass |
 | `scripts/AxiomAudit.lean` | extended from 22 to 36 theorem/lemma reports |
 
+### Kernel verification
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Build | `lake build DenseAssociativeMemory` (VPS, pinned Lean 4.35.0-rc2 / Mathlib) | 8,941 jobs, success |
+| Axiom footprint | `bash scripts/axiom-audit.sh` (36 reports) | 34 × `[propext, Classical.choice, Quot.sound]`; 2 × `[propext, Quot.sound]` (`toggleAt_toggleAt`, `toggleAt_target`); zero `sorryAx`. Evidence: `verification/cp6c1-axiom-audit.txt` |
+| CI | push of `cp6c-mean-zero` | complete workflow successful |
+
+## CP6c.2 — exact expected one-flip energy gap (branch `cp6c-expected-gap`)
+
+**Status: source-level, awaiting kernel check.** `LeanDAM/ExpectedGap.lean` is imported by `DenseAssociativeMemory.lean`. The authoring environment cannot run Lean; build and axiom rows below are pending until the VPS or CI run.
+
+### Statement
+
+```lean
+theorem condMean_flipEnergyGap_eq_signal (n : ℕ) (μ : Memory) (i : Neuron) (t : Neuron → Bool) :
+    condMeanGivenTarget μ t
+        (fun ω => flipEnergyGap (polyF n) (patternsOf ω) (patternState (patternsOf ω) μ) i) =
+      oneFlipSignal (Fintype.card Neuron) n
+```
+
+with `oneFlipSignal N n := (N : ℝ) ^ n - ((N : ℝ) - 2) ^ n`.
+
+### Hypotheses
+
+- Finite `Memory` and `Neuron` with decidable equality; any `n : ℕ`, including `n = 0`.
+- The existence of `μ` and `i` forces at least one memory and one neuron; no other size hypothesis, and no large-`N` regime.
+- `N − 2` is formed in `ℝ`, so `N ∈ {1, 2}` is handled without natural-number truncation.
+- Separation function `polyF n` only: the signal formula is specific to the polynomial convention, even though CP6c.1's mean-zero result holds for every `F`.
+
+### Argument
+
+1. `flipEnergyGap_signal_noise_decomposition` applies at every sample, since `areBinaryPatterns_patternsOf ω μ` makes each target pattern binary.
+2. The signal is a fixed real number; `condMean_const` averages it over the nonempty fiber (`sum_targetFiber_const`, `targetFiber_card_ne_zero`).
+3. The cross-talk fiber sum is zero by CP6c.1 (`sum_cond_crossTalk_eq_zero (polyF n)`, definitionally `noiseTerm n`).
+4. `Finset.sum_add_distrib` combines the two.
+
+Target memory `μ`, neuron `i` and target pattern `t` are fixed throughout; only the non-target coordinates vary across the fiber.
+
+### Source correspondence
+
+Krotov–Hopfield p. 2 states `⟨ΔE⟩ = Nⁿ − (N−2)ⁿ ≈ 2nNⁿ⁻¹`. This theorem proves the exact equality, conditioned on the target pattern; the `≈` remains an asymptotic source claim.
+
+### New declarations
+
+`oneFlipSignal` (def), `targetFiber_card_ne_zero`, `sum_targetFiber_const`, `condMean_const`, `condMean_flipEnergyGap_eq_signal`. No existing statement changed.
+
+### Pre-build evidence
+
+| Check | Result |
+| --- | --- |
+| Exact brute-force check (`scripts/cp6c2_model_check.py`; N ∈ {1,2,3,4}, K ∈ {2,3}, n ∈ {0,…,4}) | every target-fiber mean equals `Nⁿ − (N−2)ⁿ` exactly |
+| `bash scripts/check-lean-sources.sh` | exit 0: 6 Lean files pass |
+| `scripts/AxiomAudit.lean` | extended from 36 to 40 reports |
+
 ### Awaiting kernel check
 
 | Check | Command | Result |
 | --- | --- | --- |
 | Build | `lake build DenseAssociativeMemory` | pending |
-| Axiom footprint | `bash scripts/axiom-audit.sh` (36 reports) | pending |
-| CI | push of `cp6c-mean-zero` | pending |
+| Axiom footprint | `bash scripts/axiom-audit.sh` (40 reports) | pending |
+| CI | push of `cp6c-expected-gap` | pending |
 
 ## Mathematical boundary
 
@@ -99,7 +154,7 @@ Historical source reportedly proves an exact decomposition:
 \Delta E_i^\mu=\bigl[N^n-(N-2)^n\bigr]+\eta_i^\mu.
 \]
 
-Conditional mean-zero noise under independent uniform non-target spin patterns is **implemented at source level** on `cp6c-mean-zero` (CP6c.1 above) and becomes established once the kernel check passes. Once proved, linearity yields the full conditional expected gap equal to the deterministic signal, even if the noise has nonzero variance. For fixed `n`, the signal has leading growth `2n N^(n-1)`.
+Conditional mean-zero noise under independent uniform non-target spin patterns is **kernel-verified** (CP6c.1 above). The resulting exact conditional expected gap is CP6c.2, at source level above. By linearity the expected gap equals the deterministic signal even though the noise has nonzero variance. For fixed `n`, the signal has leading growth `2n N^(n-1)`.
 
 The variance asymptotic, Gaussian retrieval-error estimate, and capacity scalings remain source claims, not checked theorems. No Energy Transformer architecture, circuit, energy-per-token metric, or Dynamical Mind hardware property has been formally verified here.
 

@@ -38,3 +38,7 @@ import DenseAssociativeMemory
 #print axioms LeanDAM.targetFiber_card_pos
 #print axioms LeanDAM.condMean_noiseTerm_eq_zero
 #print axioms LeanDAM.condMean_crossTalk_eq_zero
+#print axioms LeanDAM.targetFiber_card_ne_zero
+#print axioms LeanDAM.sum_targetFiber_const
+#print axioms LeanDAM.condMean_const
+#print axioms LeanDAM.condMean_flipEnergyGap_eq_signal

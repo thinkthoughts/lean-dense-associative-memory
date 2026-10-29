@@ -1,5 +1,7 @@
 # Specification
 
+> **Documentation checkpoint (October 29, 2026):** This document preserves the historical reading-point record and its completion claims. The supplied HEAD `f52348e` has HTML in the imported `LeanDAM/Capacity.lean`, so CP6b–CP6c declarations require source restoration and a fresh kernel-checked build before their status is current. See [ROADMAP.md](ROADMAP.md), [REPORT.md](REPORT.md), and [the review reconciliation](reviews/RECONCILIATION_2026-10-29.md). The conditional mean-zero noise theorem and ensuing exact expected-gap identity are proposed; the numerical sign-preservation theorem is a separate track from probabilistic retrieval bounds.
+
 ## Reading Point 0 — Seminar Abstract
 
 **Speaker:** Dmitry Krotov  

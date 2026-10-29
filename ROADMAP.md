@@ -4,13 +4,13 @@
 
 ## Gate R0 — Recover a verifiable baseline
 
-- [ ] **R0.1 Restore source.** Inspect `git show 0077024:LeanDAM/Capacity.lean`; preserve the HTML currently occupying that path (e.g. `docs/index.html`), restore the Lean module and examine the diff.
+- [x] **R0.1 Restore source.** Inspect `git show 0077024:LeanDAM/Capacity.lean`; preserve the HTML currently occupying that path (e.g. `docs/index.html`), restore the Lean module and examine the diff. *Done on `gate-r0`: Lean module byte-identical to `0077024`; HTML byte-identical at `docs/index.html` (see `REPORT.md`).*
 - [ ] **R0.2 Build.** Use the pinned Lean/Mathlib versions and run `lake build DenseAssociativeMemory`. Record revision, exit code and warnings in `REPORT.md`.
 - [ ] **R0.3 Axioms.** Inspect for `sorry`/custom axioms, run `#print axioms` on key theorems, and require no `sorryAx`. Report actual dependencies; do not infer an axiom footprint from source inspection.
-- [ ] **R0.4 CI.** Build on pushes and PRs and detect non-Lean content in imported `.lean` files. Add a reproducible axiom audit.
+- [ ] **R0.4 CI.** Build on pushes and PRs and detect non-Lean content in imported `.lean` files. Add a reproducible axiom audit. *Implemented on `gate-r0` (`.github/workflows/lean.yml`, `scripts/`); the integrity guard is tested locally against both the repaired tree and the HTML overwrite. Checked once the first workflow run passes.*
 - [ ] **R0.5 Update verification status.** Only after these checks mark the historical CP2–CP6c proof sources as verified at the repaired HEAD.
 
-*This documentation package does not perform Gate R0.*
+*Gate R0 status: R0.1 complete; R0.2, R0.3 and R0.5 await `bash scripts/r0-verify.sh` or the first CI run on `gate-r0`.*
 
 ## Track A — Exact finite capacity mathematics
 

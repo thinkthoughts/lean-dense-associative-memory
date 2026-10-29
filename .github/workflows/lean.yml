@@ -1,0 +1,58 @@
+name: Lean build and axiom audit
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Source-integrity guard (HTML, sorry/admit, axiom, imports)
+        run: bash scripts/check-lean-sources.sh
+
+      - name: Install elan (toolchain from lean-toolchain)
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Cache .lake
+        uses: actions/cache@v4
+        with:
+          path: .lake
+          key: lake-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lakefile.toml', 'lake-manifest.json') }}
+
+      - name: Record versions
+        run: |
+          cat lean-toolchain
+          lean --version
+          lake --version
+
+      - name: Fetch Mathlib cache
+        run: lake exe cache get
+
+      - name: Build
+        run: |
+          set -o pipefail
+          lake build DenseAssociativeMemory 2>&1 | tee build.log
+
+      - name: Axiom audit
+        run: bash scripts/axiom-audit.sh axiom-audit.txt
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-evidence
+          path: |
+            build.log
+            axiom-audit.txt
+            lake-manifest.json
